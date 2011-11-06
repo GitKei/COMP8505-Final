@@ -22,21 +22,132 @@ Need an intro...
 
 \begin{lstlisting}
 Pseudo-code for Client Program
-\{
-	Pseudo code goes here
+{
+  Main Function
+  {
+    Parse arguments;
+    Read config file;
 
-	...
-\}
+    Pass address into backdoor_client();
+  }
+
+  backdoor_client Function
+  {
+    Verify address and port;
+
+    Setup listening_thread();
+
+    While read stdin
+    {
+      if exfil switch is set
+        set exfil path to send;
+
+      Prepare raw socket;
+    }
+  }
+
+  listen_thread Function
+  {
+    Prepare listening socket;
+
+    While socket is open
+    {
+      Receive packet;
+      Decrypt payload;
+      Print decrypted payload;
+    }
+  }
+}
 \end{lstlisting}
+
+\clearpage
 
 \begin{lstlisting}
 Pseudo-code for Server Program
-\{
-	Pseudo code goes here
+{
+  Main Function
+  {
+    Parse arguments;
+    Read config file;
 
-	...
-\}
+    Mask the process name;
+
+    Pass filter into pcap_init();
+
+    Execute srv_listen();
+  }
+
+  pcap_init Function
+  {
+    Open pcap packet capture;
+    Build packet filter;
+    Set packet filer;
+  }
+
+  srv_listen Function
+  {
+    Forever Loop
+    {
+      Process packet and pass into pkt_handler;
+    }
+  }
+
+  pkt_handler Function
+  {
+    Locate payload portion of packet;
+
+    Authenticate backdoor header key;
+
+    Return if authentication fails;
+
+    Decrypt payload with DES;
+
+    Verify decrypted contents;
+
+    Extract command from contents;
+
+    Grab return address;
+
+    Pass command and address into execute();
+  }
+
+  execute Function
+  {
+    Run command and grab standard out;
+
+    Prepare raw socket for duplex;
+
+    While content in stdout
+    {
+      Switch with covert mode;
+      Encrypt content with DES;
+      Send encrypted content to client;
+    }   
+  }
+
+  covert_udplen Function
+  {
+    
+  }
+
+  covert_ntp Function
+  {
+    
+  }
+
+  covert_icmp Function
+  {
+    
+  }
+
+  exfil Function
+  {
+
+  }
+}
 \end{lstlisting}
+
+\clearpage
 
 \section{Communication Details}
 
@@ -67,6 +178,8 @@ Pseudo-code for State Machine
 \}
 \end{lstlisting}
 
+\clearpage
+
 \subsection{Covert Channel}
 
 \begin{figure}[htb]                                                                       
@@ -92,6 +205,8 @@ Pseudo-code for State Machine
   \caption{Overall Transmission Diagram}
   \label{fig:transmission}
 \end{figure}
+
+\clearpage
 
 \section{Conclusion}
 
