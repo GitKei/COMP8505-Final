@@ -33,6 +33,20 @@ In both modes, the Client will also be listening for Exfiltration transmissions 
 The Server will simultaneously be monitoring its network interfaces for incoming commands from the Client and its list of
 watch directories for file changes.
 
+The program will offer 3 different covert channel modes:
+\begin{enumerate}
+  \item UDP Header - Source Port
+  \item NTP Payload - Root Dispersion
+  \item ICMP Echo - Sequence Number
+\end{enumerate}
+
+The goal that we will be trying to attain is communication with a minimal footprint by which someone could identify and compromise our channel, to
+that end we will be concentrating on secrecy and not raw throughput.
+
+All of our communication will be encrypted using DES with a key that is stored in the configuration file.  Further, transmissions will be prefixed with a password,
+however, if someone has broken our encryption, it is only a matter of time before they reverse engineer the protocol, so the value of the password is limited.
+At best, we are buying ourselves a little bit more time.
+
 \begin{lstlisting}
 Pseudo-code for Client Program
 {
@@ -164,7 +178,18 @@ Pseudo-code for Server Program
 
 \section{Communication Details}
 
+As stated earlier, our goal is to be undetectable. To that end, all transmissions will be sent using raw sockets and all reception will be done using the pcap library; this will allow us to bypass
+any local firewalls. If a suspicious admin was to send random probes to our Client machine, ideally it should not respond at all.  Whenever we are sending data we will do so slowly so that
+there aren't any CPU usage or bandwidth spikes to draw attention to our covert channel.  The other advantage of transmitting more slowly it is less likely that our packets will be
+reordered or dropped as we are adding minimal traffic to the channel, the only time a packet would be dropped would be on an already saturated channel. 
+
+This will allow us to use a simpler reliability mechanism. As we want to minimize the amount of two way communication required by our covert channel, we will simply transmit some
+redundancy data with the initial frame that will allow us to verify and acknowledge successful transmissions.  Bad hash values will signal corrupted data and timeouts will
+signal dropped packets; both of these conditions will trigger a full retransmission.
+
 \subsection{State Machine}
+
+The client and the server will each possess a pair of threads to run each of their State Machines.
 
 \begin{figure}[htb]                                                                       
   \begin{center}
@@ -173,6 +198,8 @@ Pseudo-code for Server Program
   \caption{Program State Transition Diagram}
   \label{fig:std}
 \end{figure}
+
+\clearpage
 
 \begin{figure}[htb]                                                                       
   \begin{center}
@@ -195,6 +222,9 @@ Pseudo-code for State Machine
 
 \subsection{Covert Channel}
 
+In order to simplify covert channel handling, we will use the same internal format regardless of which program mode is selected. We will use 2 bytes for our covert channel
+in whichever protocol we are using as a host. The format of the data we will be putting in those 2 bytes can be seen in the following diagram.
+
 \begin{figure}[htb]                                                                       
   \begin{center}
     \includegraphics[width=0.9\textwidth]{imgs/packet.png}
@@ -202,6 +232,16 @@ Pseudo-code for State Machine
   \caption{Packet Data Diagram}
   \label{fig:packet}
 \end{figure}
+
+The 5 signature bits should be enough to uniquely identify our covert channel, although these should be different for each mode so that there isn't a single signature that can
+be used to detect it. The 3 bit offset may not strictly be necessary as we will be sending slowly, but it would be unfortunate to lose data because our packets were reordered in
+transit.  
+
+Finally, we will only be sending 1 byte of data per packet, however, that causes an issue as we would like to be able to encrypt 64bits of data at a time. To that end
+we will be building 8 byte frames. This means we need the ability to identify the length of a transmission as not all of them will fall on even 8 byte boundaries.  To solve this problem
+(and a few others) we will introduce a Control frame.
+
+\clearpage
 
 \begin{figure}[htb]                                                                       
   \begin{center}
@@ -211,6 +251,17 @@ Pseudo-code for State Machine
   \label{fig:frame}
 \end{figure}
 
+Inside the Control frame we are incuding a type field so that we can determine what type of request/response we are receiving, a length field so that we know in advance how
+many bytes we can expect to receive, and a hash so that we can determine the validity of the data that we have received. In the interest of keeping our Control frame compact,
+we will be using only 3 bytes for the length field, limiting us to 16MB transmissions; we believe that transmissions larger than that would be difficult to consider covert. 
+
+Another shortcoming due to the small CNT frame size is that we are only using 4B of the MD5 hash, which means our chance of a hash collision is 1 in $2^{16}$, rather than the $2^{32}$
+for the full hash value (note $n/2$ due to the birthday paradox). We feel that this is an acceptable tradeoff given the design goals we set earlier.
+
+The overall structure of a transmission at a high level can be visualized as follows:
+
+\clearpage
+
 \begin{figure}[htb]                                                                       
   \begin{center}
     \includegraphics[width=0.9\textwidth]{imgs/transmission.png}
@@ -219,7 +270,8 @@ Pseudo-code for State Machine
   \label{fig:transmission}
 \end{figure}
 
-\clearpage
+We will lead with the 8 byte control packet, followed by the pre-determined password and then the payload. The hash value will be calculated over the password and payload
+portions of the transmission.
 
 \section{Conclusion}
 
