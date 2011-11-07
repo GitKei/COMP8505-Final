@@ -166,6 +166,8 @@ Pseudo-code for Server Program
 
 \subsection{State Machine}
 
+The communication between the client and server have to be reliable
+
 \begin{figure}[htb]                                                                       
   \begin{center}
     \includegraphics[width=0.9\textwidth]{imgs/std.png}
@@ -250,6 +252,25 @@ Pseudo-code for State Machine
   \caption{Overall Transmission Diagram}
   \label{fig:transmission}
 \end{figure}
+
+\clearpage
+
+\section{Task Breakdown}
+
+\begin{itemize}
+	\item Extract old code [Santana]
+	\item Reliability
+	\subitem Retransmissions [Steve]
+	\subitem Control Packets [Steve]
+	\subitem Timeouts [Steve]
+	\item Covert Raw Socket Crafting
+	\subitem UDP Length Mode [Santana]
+	\subitem NTP Mode [Santana]
+	\subitem ICMP Mode [Santana]
+	\item Exfiltration
+	\subitem Client [Steve]
+	\subitem Server [Santana]
+\end{itemize}
 
 \clearpage
 
