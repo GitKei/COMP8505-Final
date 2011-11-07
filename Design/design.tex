@@ -187,9 +187,11 @@ This will allow us to use a simpler reliability mechanism. As we want to minimiz
 redundancy data with the initial frame that will allow us to verify and acknowledge successful transmissions.  Bad hash values will signal corrupted data and timeouts will
 signal dropped packets; both of these conditions will trigger a full retransmission.
 
+\clearpage
+
 \subsection{State Machine}
 
-The client and the server will each possess a pair of threads to run each of their State Machines.
+The client and the server will each possess a pair of threads to run each of their State Machines.  The basic interaction of each can be seen in the following diagram:
 
 \begin{figure}[htb]                                                                       
   \begin{center}
@@ -199,7 +201,14 @@ The client and the server will each possess a pair of threads to run each of the
   \label{fig:std}
 \end{figure}
 
+Starting with the Client, it is the Active part in the Command role. It will ready itself and then send user input to the Server via the covert channel. The Server will then process
+the command and optionally push the response to the Exfil/Response component to send back to the Client. In the Exfil/Response role, the Server is the Active party as it
+initiates communication with the Client.
+
 \clearpage
+
+However, this does not cover the lower level operation as we are not using a reliable protocol like TCP, thus, we need to introduce a more detailed set of steps where the SND and RCV
+bubbles in the previous diagram are.
 
 \begin{figure}[htb]                                                                       
   \begin{center}
@@ -208,6 +217,9 @@ The client and the server will each possess a pair of threads to run each of the
   \caption{Transmission State Transition Diagram}
   \label{fig:comm}
 \end{figure}
+
+These sub-states break down the expected behaviour when we are sending or receiving an individual transmission and cover the timeout and retransmission requirements we set
+forth for our covert channel. The Control frame (CNT PKT) is discussed further in the Covert Channel section of the design.
 
 \begin{lstlisting}
 Pseudo-code for State Machine
