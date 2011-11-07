@@ -171,11 +171,43 @@ Pseudo-code for Server Program
 
 \begin{lstlisting}
 Pseudo-code for State Machine
-\{
-	Pseudo code goes here
-
-	...
-\}
+{
+  Send Machine
+  {
+    Prepare raw socket;
+    
+    Wait for command to trigger;
+    
+    While more to send
+    {
+      Send packet to receiving machine;
+       
+      Sleep to slow data stream;
+    }
+  }
+  
+  Receive Machine
+  {
+    Open pcap packet reading;
+    
+    Wait for trigger
+    {
+      Process packet;
+      
+      If last packet
+      {
+        If hash is incorrect
+          Ask for retransmission;
+        
+        If server
+          Send response or file;
+      
+        If client
+          Display to command line;
+      }
+    }
+  }
+}
 \end{lstlisting}
 
 \clearpage
