@@ -323,6 +323,25 @@ The overall structure of a transmission at a high level can be visualized as fol
   \label{fig:transmission}
 \end{figure}
 
+\clearpage
+
+\section{Task Breakdown}
+
+\begin{itemize}
+	\item Extract old code [Santana]
+	\item Reliability
+	\subitem Retransmissions [Steve]
+	\subitem Control Packets [Steve]
+	\subitem Timeouts [Steve]
+	\item Covert Raw Socket Crafting
+	\subitem UDP Length Mode [Santana]
+	\subitem NTP Mode [Santana]
+	\subitem ICMP Mode [Santana]
+	\item Exfiltration
+	\subitem Client [Steve]
+	\subitem Server [Santana]
+\end{itemize}
+
 We will lead with the 8 byte control packet, followed by the pre-determined password and then the payload. The hash value will be calculated over the password and payload
 portions of the transmission.
 
