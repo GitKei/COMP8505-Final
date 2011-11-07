@@ -20,6 +20,19 @@ Need an intro...
 
 \section{Program Functionality}
 
+The program will be made up of two executables, a Command and Control Client application and a Backdoor Server application.
+
+The Client should have two modes, of which one will be active at a time:
+\begin{itemize}
+  \item Command Mode - In which the user can send commands to the Server and optionally receive responses.
+  \item Exfiltration Mode - In which the user can update the watch list on the Server.
+\end{itemize}
+
+In both modes, the Client will also be listening for Exfiltration transmissions from the server and saving them to disk.
+
+The Server will simultaneously be monitoring its network interfaces for incoming commands from the Client and its list of
+watch directories for file changes.
+
 \begin{lstlisting}
 Pseudo-code for Client Program
 {
