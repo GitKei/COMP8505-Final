@@ -54,8 +54,6 @@ All of our communication will be encrypted using DES with a key that is stored i
 however, if someone has broken our encryption, it is only a matter of time before they reverse engineer the protocol, so the value of the password is limited.
 At best, we are buying ourselves a little bit more time.
 
-\clearpage
-
 \begin{lstlisting}
 Pseudo-code for Client Program
 {
@@ -323,6 +321,9 @@ The overall structure of a transmission at a high level can be visualized as fol
   \label{fig:transmission}
 \end{figure}
 
+We will lead with the 8 byte control packet, followed by the pre-determined password and then the payload. The hash value will be calculated over the password and payload
+portions of the transmission.
+
 \clearpage
 
 \section{Task Breakdown}
@@ -342,7 +343,18 @@ The overall structure of a transmission at a high level can be visualized as fol
 	\subitem Server [Santana]
 \end{itemize}
 
-We will lead with the 8 byte control packet, followed by the pre-determined password and then the payload. The hash value will be calculated over the password and payload
-portions of the transmission.
+\begin{figure}[htb]                                                                       
+  \begin{center}
+    \includegraphics[width=0.5\textwidth]{imgs/timeline.png}
+  \end{center}
+  \caption{Project Timeline}
+  \label{fig:timeline}
+\end{figure}
+
+We feel that the timeline is extremely tight in the testing and reporting phases, so we will attempt to begin these activities early, while development work is being done on the various
+program components.
+
+The only times we can firmly schedule for the project are on weekends, but if we see the schedule slipping, we have the option to add weekday hours as required to bring it back on
+track.
 
 \end{document}
