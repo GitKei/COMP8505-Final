@@ -52,9 +52,7 @@ that end we will be concentrating on secrecy and not raw throughput.
 
 All of our communication will be encrypted using DES with a key that is stored in the configuration file.  Further, transmissions will be prefixed with a password,
 however, if someone has broken our encryption, it is only a matter of time before they reverse engineer the protocol, so the value of the password is limited.
-At best, we are buying ourselves a little bit more time.
-
-\clearpage
+At best, we are buying ourselves a little bit more time.\\
 
 \begin{lstlisting}
 Pseudo-code for Client Program
@@ -79,6 +77,7 @@ Pseudo-code for Client Program
         set exfil path to send;
 
       Prepare raw socket;
+      Send command packet to server;
     }
   }
 
@@ -123,9 +122,7 @@ Pseudo-code for Server Program
   srv_listen Function
   {
     Forever Loop
-    {
       Process packet and pass into pkt_handler;
-    }
   }
 
   pkt_handler Function
@@ -137,7 +134,7 @@ Pseudo-code for Server Program
     Return if authentication fails;
 
     Decrypt payload with DES;
-
+    
     Verify decrypted contents;
 
     Extract command from contents;
@@ -150,35 +147,19 @@ Pseudo-code for Server Program
   execute Function
   {
     Run command and grab standard out;
-
+    
     Prepare raw socket for duplex;
-
-    While content in stdout
-    {
-      Switch with covert mode;
-      Encrypt content with DES;
-      Send encrypted content to client;
-    }   
-  }
-
-  covert_udplen Function
-  {
     
-  }
-
-  covert_ntp Function
-  {
-    
-  }
-
-  covert_icmp Function
-  {
-    
-  }
-
-  exfil Function
-  {
-
+    if exfil command
+      Pass command (path) into exfiltration function;  
+	  
+    else
+      While content in stdout
+      {
+        Switch with covert mode;
+        Encrypt content with DES;
+        Send encrypted content to client;
+      }
   }
 }
 \end{lstlisting}
@@ -229,6 +210,8 @@ bubbles in the previous diagram are.
 
 These sub-states break down the expected behaviour when we are sending or receiving an individual transmission and cover the timeout and retransmission requirements we set
 forth for our covert channel. The Control frame (CNT PKT) is discussed further in the Covert Channel section of the design.
+
+\clearpage
 
 \begin{lstlisting}
 Pseudo-code for State Machine
@@ -323,7 +306,8 @@ The overall structure of a transmission at a high level can be visualized as fol
   \label{fig:transmission}
 \end{figure}
 
-\clearpage
+We will lead with the 8 byte control packet, followed by the pre-determined password and then the payload. The hash value will be calculated over the password and payload
+portions of the transmission.
 
 \section{Task Breakdown}
 
@@ -341,8 +325,5 @@ The overall structure of a transmission at a high level can be visualized as fol
 	\subitem Client [Steve]
 	\subitem Server [Santana]
 \end{itemize}
-
-We will lead with the 8 byte control packet, followed by the pre-determined password and then the payload. The hash value will be calculated over the password and payload
-portions of the transmission.
 
 \end{document}
