@@ -16,7 +16,14 @@
 
 \section{Introduction}
 
-Need an intro...
+We are building our program from the foundation created by our previous covert channel and rootkit assignments. While we have explored the idea of creating a Passive Covert
+Channel, we decided against it both because it would be more difficult to test and requires a compromised gateway router which must then forward the traffic to a known location.
+
+The primary functionality that is being added for this project is the exfiltration function, the command function will be ported from existing code. As far as the covert channels go, we will again be primarily using existing code, although we would like to try an application layer covert channel as well as an ICMP based one to see if they are any easier or more difficult to detect.
+
+As we would like this program to be suitable for use over the public internet, we will be introducing a simple reliability layer to allow for retransmission of corrupted or incomplete data.
+Finally, we want to address a few issues with the existing code that we will be porting that might cause it to give itself away (eg. printing error messages to the screen). If time permits,
+it would be nice to look installing the backdoor as a kernel module, however, that looks unlikely at the moment.
 
 \section{Program Functionality}
 
@@ -46,6 +53,8 @@ that end we will be concentrating on secrecy and not raw throughput.
 All of our communication will be encrypted using DES with a key that is stored in the configuration file.  Further, transmissions will be prefixed with a password,
 however, if someone has broken our encryption, it is only a matter of time before they reverse engineer the protocol, so the value of the password is limited.
 At best, we are buying ourselves a little bit more time.
+
+\clearpage
 
 \begin{lstlisting}
 Pseudo-code for Client Program
@@ -316,7 +325,5 @@ The overall structure of a transmission at a high level can be visualized as fol
 
 We will lead with the 8 byte control packet, followed by the pre-determined password and then the payload. The hash value will be calculated over the password and payload
 portions of the transmission.
-
-\section{Conclusion}
 
 \end{document}
