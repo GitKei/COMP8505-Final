@@ -20,18 +20,27 @@ PROGRAMMERS:
 NOTES: This file holds the constants used throughout the program.
 */
 
-#define MASK 		"/sbin/udevd"
-#define MAX_LEN 1024
-#define HDR_KEY "(P^.^)=P"
-#define HDR_LEN 8
-#define PASSKEY "tessera"
-#define KEY_LEN 8
-#define DEF_FLT "udp port 53"
-#define CMD_STR "start["
-#define STR_LEN 6
-#define CMD_END "]end"
-#define END_LEN 4
+// Sized types
+#define uint8   u_int8_t
+#define uint16  u_int16_t
+#define uint32  u_int32_t
+#define uint64  u_int64_t
+
+#define TRUE    1
+#define FALSE   0
+
+#define MASK 	"/sbin/udevd"
+
+#define MAX_LEN 256
+
 #define DEF_PRT 53
 #define DEF_ADR "127.0.0.1"
+#define DEF_FLT "udp port 53"
+
+#define HDR_KEY "(P^.^)=P"
+#define PASSKEY "tessera"
+
+#define CMD_STR "start["
+#define CMD_END "]end"
 
 #endif

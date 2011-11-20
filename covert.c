@@ -7,66 +7,16 @@
 #include "covert.h"
 #include "crypto.h"
 #include "inet.h"
-#include "util.h"
 #include "ntp.h"
 
 #define SLEEP_TIME 100000
 
 int main(int argc, char **argv)
 {
-	extern char *optarg;
-	extern int optind, optopt;
-	int c;
-	uint8 isClient = TRUE;
-	uint8 keepPort = FALSE;
-	FILE* file;
-	char fname[BUF_SIZ];
-	char buffer[BUF_SIZ];
+	char buffer[MAX_LEN];
 	char *pbuf;
 	uint buflen;
 	
-	// Default to STDIN/STDOUT
-	strcpy(fname, "-");
-
-	// Check for root user
-	if (geteuid() != 0)
-	{
-		fprintf(stderr, "Must be run as root.\n");
-		usage(argv[0]);
-	}
-
-	while ((c = getopt(argc, argv, ":cspf:")) != -1) 
-	{
-		switch(c) 
-		{
-			case 'c':
-				isClient = TRUE;
-				break;
-			case 's':
-				isClient = FALSE;
-				break;
-			case 'p':
-				keepPort = TRUE;
-				break;
-			case 'f':
-				strncpy(fname, optarg, BUF_SIZ);
-				break;
-			case ':': /* Missing operand for f */
-				fprintf(stderr, "-%c requires an filename.\n", optopt);
-				usage(argv[0]);
-				break;
-			case '?': /* Unrecognized option */
-				fprintf(stderr, "-%c is not a recognized option.\n", optopt);
-				usage(argv[0]);
-				break;
-		}
-	}
-
-	if (optind == argc)
-	{
-		fprintf(stderr, "Missing remote host IP.\n");
-		usage(argv[0]);
-	}
 
 	uint32 dest = resolve(argv[optind]); 
 

@@ -12,7 +12,7 @@
 
 struct ntp_dgram
 {
-  uint8 flags;
+	uint8 flags;
 	uint8 stratum;
 	uint8 interval;
 	uint8 precision;
@@ -36,7 +36,7 @@ struct ntp_dgram prep()
 	packet.interval = 0x08;
 	packet.precision = 0xEE;
 	packet.delay = htonl(0x1532);
-  packet.dispersion = htonl(0x11A6);
+	packet.dispersion = htonl(0x11A6);
 	packet.ref_id = htonl(0x43D44ADC);
 	
 	clock_gettime(CLOCK_REALTIME, &curr);

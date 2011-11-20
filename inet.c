@@ -178,7 +178,7 @@ void srv_recv(uint32 src_addr, FILE* file, uint8 keepPort)
 				buf[1] = ntohs(packet.udp.source);
 				buf[2] = 0;
 
-				dec = decrypt(SEKRET_KEY, buf, 2);
+				dec = decrypt(PASSKEY, buf, 2);
 				memcpy(buf, dec, 2);
 				free(dec);
 
