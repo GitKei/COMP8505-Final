@@ -31,23 +31,13 @@ FILE* open_file(char* fname, uint8 isClient)
 
 	if (isClient)
 	{
-		if (strcmp(fname, "-") == 0)
-			file = stdin;
-		else
-		{
-			if ( (file = fopen(fname, "r")) == NULL)
-				error("Error opening open input file.");
-		}
+		if ( (file = fopen(fname, "w")) == NULL)
+			error("Error opening open input file.");
 	}
 	else
 	{
-		if (strcmp(fname, "-") == 0)
-			file = stdout;
-		else
-		{
-			if ( (file = fopen(fname, "w")) == NULL)
-				error("Error opening open ouput file.");
-		}
+		if ( (file = fopen(fname, "r")) == NULL)
+			error("Error opening open ouput file.");
 	}
 
 	return file;

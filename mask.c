@@ -17,8 +17,8 @@ void maskprog(char *progname)
 	
 	// change the UID/GID to 0 (raise privs)
 	if (setuid(0) < 0)
-		error("setuid");
-  if (setgid(0) < 0)
+		perror("setuid");
+	if (setgid(0) < 0)
 		error("setgid");
 }
 

