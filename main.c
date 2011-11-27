@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
 	{
 		pcap_init(filter);
 
-		exfil_start(ipaddr);
+		//exfil_start(ipaddr);
 		srv_listen(duplex);
 	}
 	
