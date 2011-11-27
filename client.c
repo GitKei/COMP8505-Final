@@ -30,7 +30,7 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 		error("Invalid destination port specified.");
 
 	saddr.sin_family = AF_INET;
-	saddr.sin_addr.s_addr = inet_addr(ipaddr);
+	saddr.sin_addr.s_addr = ipaddr;
 	saddr.sin_port = htons(dport);
 
 	if (duplex)
