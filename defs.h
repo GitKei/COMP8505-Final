@@ -20,6 +20,8 @@ PROGRAMMERS:
 NOTES: This file holds the constants used throughout the program.
 */
 
+#include <sys/types.h>
+
 // Sized types
 #define uint8   u_int8_t
 #define uint16  u_int16_t

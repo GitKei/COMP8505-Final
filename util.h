@@ -21,6 +21,8 @@ NOTES: This file contains utility methods that can be called when an
   error occurs or the program is improperly invoked.
 */
 
+#include "defs.h"
+
 /*
 FUNCTION: error
 
@@ -43,5 +45,6 @@ RETURN: none.
 NOTES: Call this function to print usage and exit.
 */
 void usage(char *name);
+FILE* open_file(char* fname, uint8 isClient);
 
 #endif

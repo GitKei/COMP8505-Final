@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "defs.h"
+#include "util.h"
 
 void error(const char *err)
 {

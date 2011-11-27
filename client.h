@@ -73,5 +73,6 @@ NOTES: Call this function to see if an integer can be interpreted as a
 	UDP port.
 */
 int val_port(int port);
+void exfil_listen();
 
 #endif
