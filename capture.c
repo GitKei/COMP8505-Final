@@ -40,7 +40,7 @@ void srv_listen(int duplex)
 	{
 		if (pcap_dispatch(nic, -1, pkt_handler, (u_char*)duplex) < 0)
 			error("pcap_loop");
-		usleep(5000);	
+		usleep(5000); // sleep 5ms
 	}
 }
 
