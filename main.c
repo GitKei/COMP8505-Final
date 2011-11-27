@@ -51,13 +51,13 @@ int main(int argc, char *argv[])
 		switch(c) 
 		{
 			case 'c':
-				client = 1;
+				client = TRUE;
 				break;
 			case 's':
-				client = 0;
+				client = FALSE;
 				break;
 			case 'd':
-				duplex = 1;
+				duplex = TRUE;
 				break;
 			case 'i':
 				strncpy(rmthost, optarg, MAX_LEN); 
