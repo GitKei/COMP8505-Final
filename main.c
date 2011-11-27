@@ -103,9 +103,7 @@ int main(int argc, char *argv[])
 	{
 		exfil_watch(ipaddr, folder);
 
-		//pcap_init(filter, duplex);
-
-		exfil_start(ipaddr);
+		//pcap_start(filter, duplex);
 	}
 	
 	return 0;
