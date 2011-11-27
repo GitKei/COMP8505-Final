@@ -26,6 +26,27 @@
 #define MAX_IFACE 8
 #define TTL       64
 
+struct udp_dgram
+{
+	struct iphdr ip;
+	struct udphdr udp;
+	char data[NTP_SIZ];
+};
+
+/*
+ * Structure based on Wikipedia article detailing UDP checksum.
+ */
+struct pseudo_hdr
+{
+	uint32 saddr;
+	uint32 daddr;
+	uint8 zero;
+	uint8 proto;
+	uint16 udp_len;
+	struct udphdr udp;
+	char data[NTP_SIZ];
+};
+
 uint getaddr(int sock, uint dst_addr)
 {
 	struct ifconf ifconf;
@@ -126,6 +147,32 @@ void _send(uint32 dst_addr, uint16 src_port, uint16 dst_port, uint8 isReq)
 
 	sendto(sock, &packet, size, 0, (struct sockaddr *) &sin, sizeof(sin));
 	close(sock);
+}
+
+char* extract_udp(uint32 src_addr, char* data, int length)
+{
+	struct udp_dgram *packet = (struct udp_dgram*) data;
+	char *buf = malloc(3);
+
+	if (packet->ip.saddr == src_addr && packet->udp.dest == htons(PORT_NTP))
+	{
+		if (isReq(packet->data))
+		{
+			char *dec;
+
+			// Output data
+			buf[0] = ntohs(packet->udp.source) >> 8;
+			buf[1] = ntohs(packet->udp.source);
+			buf[2] = 0;
+
+			dec = decrypt(SEKRET, buf, 2);
+			memcpy(buf, dec, 2);
+			free(dec);
+
+			return buf;
+		}
+	}
+	return NULL;
 }
 
 void srv_recv(uint32 src_addr, FILE* file, uint8 keepPort)

