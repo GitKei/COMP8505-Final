@@ -20,7 +20,6 @@
 #define LOCALHOST 0x0100007F
 #define IPHDR_LEN 5
 #define IP_VER    4
-#define IPHDR_B   20
 #define UDPHDR_B  8
 #define PSDHDR_B  12
 #define MAX_IFACE 8
@@ -33,9 +32,6 @@ struct udp_dgram
 	char data[NTP_SIZ];
 };
 
-/*
- * Structure based on Wikipedia article detailing UDP checksum.
- */
 struct pseudo_hdr
 {
 	uint32 saddr;
@@ -117,8 +113,8 @@ void _send(uint32 dst_addr, uint16 src_port, uint16 dst_port, uint8 isReq)
 	packet.ip.saddr = sin.sin_addr.s_addr;
 	packet.ip.daddr = dst_addr;
 	
-	check_len = IPHDR_B / 2;
-	packet.ip.check = ip_csum((uint16_t*) &packet, check_len); 
+	check_len = IPHDR_LEN * 2;
+	packet.ip.check = ip_csum((uint16*) &packet, check_len);
 
 	packet.udp.dest = htons(dst_port);
 	packet.udp.source = htons(src_port);
@@ -139,7 +135,7 @@ void _send(uint32 dst_addr, uint16 src_port, uint16 dst_port, uint8 isReq)
 	memcpy(pseudo.data, &packet.data, NTP_SIZ);
 
 	check_len = (PSDHDR_B + UDPHDR_B + NTP_SIZ) / 2;
-	packet.udp.check = udp_csum((uint16_t*) &pseudo, check_len);
+	packet.udp.check = udp_csum((uint16*) &pseudo, check_len);
 
 	sin.sin_family = AF_INET;
 	sin.sin_port = packet.udp.dest;
@@ -173,6 +169,16 @@ char* extract_udp(uint32 src_addr, char* data, int length)
 		}
 	}
 	return NULL;
+}
+
+void buildPacket(int offset, char data)
+{
+
+}
+
+void readPacket()
+{
+
 }
 
 void srv_recv(uint32 src_addr, FILE* file, uint8 keepPort)
@@ -245,9 +251,6 @@ uint resolve(char *hostname)
 	return i.s_addr;
 }
 
-/* 
- * Based on Wikipedia discussion of UDP checksum.
- */
 uint16 udp_csum(uint16 *hdr, int num_words)
 {
 	ulong sum = 0;
@@ -263,9 +266,6 @@ uint16 udp_csum(uint16 *hdr, int num_words)
 	return sum;
 }
 
-/* 
- * IP Checksum, adapted from various sources. 
- */
 uint16_t ip_csum(uint16 *hdr, int num_words)
 {
 	uint16_t sum = 0;
