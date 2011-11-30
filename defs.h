@@ -50,5 +50,6 @@ NOTES: This file holds the constants used throughout the program.
 #define MD5_LEN 4
 #define CMD_TYP 0x00
 #define XFL_TYP 0x01
+#define RSP_TYP 0x02
 
 #endif

