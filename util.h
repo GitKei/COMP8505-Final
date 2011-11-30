@@ -45,6 +45,7 @@ RETURN: none.
 NOTES: Call this function to print usage and exit.
 */
 void usage(char *name);
-FILE* open_file(char* fname, uint8 isClient);
+FILE* open_file(char* fname, uint8 writeMode);
+uint64 get_sec();
 
 #endif

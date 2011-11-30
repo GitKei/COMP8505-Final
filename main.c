@@ -23,6 +23,7 @@ NOTES: See the program help for usage instructions and the attached
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/time.h>
 
 #include "server.h"
 #include "client.h"
@@ -43,7 +44,7 @@ int main(int argc, char *argv[])
 	char folder[MAX_LEN];
 	int port = DEF_PRT;
 	uint32 ipaddr;
-	
+
 	strncpy(rmthost, DEF_ADR, MAX_LEN);
 	strncpy(filter, DEF_FLT, MAX_LEN);
 	strncpy(folder, DEF_WCH, MAX_LEN);

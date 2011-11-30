@@ -129,6 +129,9 @@ void exfil_listen(uint32 src_addr)
 	int sock;
 	char buf[MAX_LEN];
 	int ret;
+	uint64 timestamp;
+	char fname[MAX_LEN];
+	FILE* file;
 
 	sock = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
 	if(sock < 0)
@@ -137,14 +140,20 @@ void exfil_listen(uint32 src_addr)
 		exit(1);
 	}
 
+	timestamp = get_sec();
+	sprintf(fname, "%llX", timestamp);
+	file = open_file(fname, TRUE);
+
 	while (TRUE)
 	{
 		char *pbuf;
 		ret = read(sock, &buf, MAX_LEN);
 		pbuf = extract_udp(src_addr, buf, ret);
 		printf("%s", pbuf);
+		fwrite(pbuf, 2, 1, file);
 		free(pbuf);
 	}
 
+	fclose(file);
 	close(sock);
 }
