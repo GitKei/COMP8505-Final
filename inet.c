@@ -15,7 +15,7 @@
 #include "util.h"
 #include "inet.h"
 #include "ntp.h"
-#include "crypto.h"
+
 
 #define LOCALHOST 0x0100007F
 #define IPHDR_LEN 5
@@ -63,12 +63,12 @@ uint getaddr(int sock, uint dst_addr)
 	}
 
 	ifs = ifconf.ifc_len / sizeof(struct ifreq);
-	
+
 	for (int i = 0; i < ifs; i++)
 	{
 		struct sockaddr_in *s_in = (struct sockaddr_in *) &(ifr[i].ifr_addr);
 
-		// We're obviously trying to send to ourselves, use the same source
+		// If source == dest, we're likely doing a local test
 		if (s_in->sin_addr.s_addr == dst_addr)
 			return s_in->sin_addr.s_addr;
 		// Don't use localhost for outgoing packets, suspicious
@@ -79,8 +79,8 @@ uint getaddr(int sock, uint dst_addr)
 			return s_in->sin_addr.s_addr;
 	}
 
-	// No interface found? Oops...
-	return 0;
+	// No interface found? Oh well, use LOCALHOST anyway
+	return LOCALHOST;
 }
 
 void _send(uint32 dst_addr, uint16 src_port, uint16 dst_port, uint8 isReq)
@@ -262,6 +262,7 @@ uint16 udp_csum(uint16 *hdr, int num_words)
 
 	return sum;
 }
+
 /* 
  * IP Checksum, adapted from various sources. 
  */
