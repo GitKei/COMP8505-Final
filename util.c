@@ -147,7 +147,7 @@ char* buildTransmission(char *data, int *len, char type)
 	// Calculate MD5
 	ptr = buff + FRAM_SZ;
 	calc_md5(ptr, tot_len, md5);
-	ptr = buff + MD5_LEN;
+	ptr = buff + 4;
 	memcpy(ptr, md5, MD5_LEN);
 
 	// Update len
@@ -156,8 +156,44 @@ char* buildTransmission(char *data, int *len, char type)
 	return buff;
 }
 
-void getTransmission()
+char* getTransmission(char *packet, int *len, char *type)
 {
+	char *data;
+	char *ptr;
+	char md5[MD5_LEN];
+	int pass_len;
+	int tot_len;
+	int data_len;
 
+	pass_len = strlen(HDR_KEY);
+
+	// Check Password
+	ptr = packet + FRAM_SZ;
+	if (memcmp(ptr, HDR_KEY, pass_len) != 0)
+		return NULL;
+
+	// Get Length
+	tot_len = (packet[1] << 16) + (packet[2] << 8) + packet[3];
+	data_len = tot_len - pass_len;
+
+	// Check MD5
+	ptr = packet + FRAM_SZ;
+	calc_md5(ptr, tot_len, md5);
+	ptr = packet + 4;
+	if (memcmp(ptr, md5, MD5_LEN) != 0)
+		return NULL;
+
+	// Get TX Type
+	*type = packet[0];
+
+	// Get Data
+	ptr = packet + FRAM_SZ + pass_len;
+	data = malloc(data_len);
+	memcpy(data, ptr, data_len);
+
+	// Update len
+	*len = data_len;
+
+	return data;
 }
 

@@ -76,5 +76,6 @@ NOTES: Note the return value is allocated on the heap and must be freed
 */
 char* decrypt(char *key, char *msg, int size);
 char* buildTransmission(char *data, int *len, char type);
+char* getTransmission(char *packet, int *len, char *type);
 
 #endif
