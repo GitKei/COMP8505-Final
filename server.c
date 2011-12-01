@@ -34,14 +34,13 @@ void pcap_start(const char *fltr_str, int duplex, uint32 ipaddr, char *folder)
 {
 	pcap_t* nic;
 	char errbuf[PCAP_ERRBUF_SIZE];
-	pthread_t exfil_thread;
-	struct exfil_pack expack;
-
-	expack.ipaddr = ipaddr;
-	expack.folder = folder;
+//	pthread_t exfil_thread;
+//	struct exfil_pack expack;
 
 	// Setup Exfil Watch
-	pthread_create(&exfil_thread, NULL, exfil_watch, &expack);
+//	expack.ipaddr = ipaddr;
+//	expack.folder = folder;
+//	pthread_create(&exfil_thread, NULL, exfil_watch, &expack);
 
 	if ((nic = pcap_open_live(NULL, MAX_LEN, 0, -1, errbuf)) == NULL)
 		error(errbuf);
@@ -62,7 +61,7 @@ void pcap_start(const char *fltr_str, int duplex, uint32 ipaddr, char *folder)
 		usleep(5000); // sleep 5ms
 	}
 	
-	pthread_join(exfil_thread, NULL);
+//	pthread_join(exfil_thread, NULL);
 }
 
 void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char *packet)
