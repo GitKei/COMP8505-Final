@@ -53,8 +53,6 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 
 		length = strlen(command) + 1;
 
-		free(enc);
-
 		frame = buildTransmission(command, &length, CMD_TYP);
 		sendto(sock, frame, length, 0, (struct sockaddr *)&saddr, sizeof(saddr));
 		free(frame);
