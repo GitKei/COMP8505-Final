@@ -74,6 +74,6 @@ NOTES: Call this function to see if an integer can be interpreted as a
 */
 int val_port(int port);
 
-void *exfil_listen(void *arg);
+void* exfil_listen(void *arg);
 
 #endif

