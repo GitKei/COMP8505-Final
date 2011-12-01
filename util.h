@@ -47,5 +47,33 @@ NOTES: Call this function to print usage and exit.
 void usage(char *name);
 FILE* open_file(char* fname, uint8 writeMode);
 uint64 get_sec();
+/*
+FUNCTION: encrypt
+
+PARAMS:
+	char *key: The key to encrypt with.
+	char *msg: The message to encrypt.
+	int size: The size of the message.
+
+RETURN: A pointer to the encrypted data block.
+
+NOTES: Note the return value is allocated on the heap and must be freed
+	by the caller unless you enjoy memory leaks.
+*/
+char* encrypt(char *key, char *msg, int size);
+/*
+FUNCTION: decrypt
+
+PARAMS:
+	char *key: The key to decrypt with.
+	char *msg: The message to decrypt.
+	int size: The length of the message.
+
+RETURN: A pointer to the decrypted data block.
+
+NOTES: Note the return value is allocated on the heap and must be freed
+	by the caller.
+*/
+char* decrypt(char *key, char *msg, int size);
 
 #endif
