@@ -100,7 +100,7 @@ void *listen_thread(void *arg)
 	if(sock < 0)
 		error("unable to open listening raw socket");
 	
-	saddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	saddr.sin_addr.s_addr = LOCALHOST; // TODO: Use an actual address instead of localhost
 	if (bind(sock, (struct sockaddr*)&saddr, sizeof(saddr)) < 0)
 		error("Unable to bind result port.\n");
 
@@ -116,22 +116,22 @@ void *listen_thread(void *arg)
 		pack_len = read(sock, &packet, MAX_LEN);
 
 		// Step 1: locate the payload portion of the packet
-		if (pack_len - ETHER_IP_UDP_LEN <= 0)
+		if (pack_len - IP_UDP_LEN <= 0)
 			continue;
-		ptr = (char *)(packet + ETHER_IP_UDP_LEN);
+		ptr = (char *)(packet + IP_UDP_LEN);
 
 		// Step 2: check for signature
 
 		// Step 3: dump data into buffer
-		dec = decrypt(SEKRET, ptr, FRAM_SZ);
+//		dec = decrypt(SEKRET, ptr, FRAM_SZ);
 		data = buf + buf_len;
-		memcpy(data, dec, FRAM_SZ);
-		free(dec);
+		memcpy(data, ptr, FRAM_SZ);
+//		free(dec);
 
-		buf_len += pack_len - ETHER_IP_UDP_LEN;
+		buf_len += pack_len - IP_UDP_LEN;
 
 		// Step 4: see if we have a full transmission
-		data = getTransmission(ptr, &buf_len, &type);
+		data = getTransmission(buf, &buf_len, &type);
 		if (data == NULL)
 			continue;
 

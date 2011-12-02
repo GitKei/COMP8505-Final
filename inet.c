@@ -16,8 +16,6 @@
 #include "inet.h"
 #include "ntp.h"
 
-
-#define LOCALHOST 0x0100007F
 #define IPHDR_LEN 5
 #define IP_VER    4
 #define UDPHDR_B  8
