@@ -37,8 +37,10 @@ int main(int argc, char *argv[])
 	extern char *optarg;
 	extern int optind, optopt;
 	int c;
-	int client = 0;
-	int duplex = 0;
+	int client = FALSE;
+	int duplex = FALSE;
+	int command_chan = CHAN_UDP;
+	int exfil_chan = CHAN_UDP;
 	char rmthost[MAX_LEN];
 	char filter[MAX_LEN];
 	char folder[MAX_LEN];
@@ -49,7 +51,7 @@ int main(int argc, char *argv[])
 	strncpy(filter, DEF_FLT, MAX_LEN);
 	strncpy(folder, DEF_WCH, MAX_LEN);
 
-	while ((c = getopt(argc, argv, ":csdhi:p:f:w:")) != -1)
+	while ((c = getopt(argc, argv, ":csdhi:p:f:w:m:x:")) != -1)
 	{
 		switch(c) 
 		{
@@ -70,6 +72,22 @@ int main(int argc, char *argv[])
 				break;
 			case 'w':
 				strncpy(folder, optarg, MAX_LEN);
+				break;
+			case 'm':
+				if (optarg[0] == 'u')
+					command_chan = CHAN_UDP;
+				else if (optarg[0] == 'n')
+					command_chan = CHAN_NTP;
+				else if (optarg[0] == 'i')
+					command_chan = CHAN_ICMP;
+				break;
+			case 'x':
+				if (optarg[0] == 'u')
+					exfil_chan = CHAN_UDP;
+				else if (optarg[0] == 'n')
+					exfil_chan = CHAN_NTP;
+				else if (optarg[0] == 'i')
+					exfil_chan = CHAN_ICMP;
 				break;
 			case 'p':
 				port = atoi(optarg);

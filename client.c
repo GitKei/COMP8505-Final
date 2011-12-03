@@ -143,6 +143,7 @@ void *listen_thread(void *arg)
 		memset(buf, 0, MAX_LEN);
 		buf_len = 0;
 		free(data);
+		data = 0;
 	}
 
 	return NULL;
