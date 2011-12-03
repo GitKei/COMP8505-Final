@@ -167,6 +167,7 @@ void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 //			enc = encrypt(SEKRET, frame, FRAM_SZ);
 
 			sendto(sock, frame, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
+			usleep(SLEEP_TIME);
 
 //			free(enc);
 		}
