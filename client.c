@@ -142,6 +142,8 @@ void *listen_thread(void *arg)
 		// Step 6: reset buffer
 		memset(buf, 0, MAX_LEN);
 		buf_len = 0;
+		free(data);
+		data = 0;
 	}
 
 	return NULL;

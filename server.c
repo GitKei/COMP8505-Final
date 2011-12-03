@@ -110,6 +110,8 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 	// Step 6: reset buffer
 	memset(buf, 0, MAX_LEN);
 	len = 0;
+	free(data);
+	data = 0;
 }
 
 void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
