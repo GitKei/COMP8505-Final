@@ -73,6 +73,7 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 	int duplex = (int) user;
 	static char buf[MAX_LEN];
 	static int len = 0;
+	short sport = 0;
 
 	// Step 1: locate the payload portion of the packet
 	if (pkt_info->caplen - ETHER_IP_LEN <= 0)
@@ -80,14 +81,18 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 	ptr = (char *)(packet + ETHER_IP_LEN);
 
 	// Step 2: check for signature
+	if(*ptr != SIGNTR)
+		return;
+
+	++ptr;
 
 	// Step 3: dump data into buffer
 //	dec = decrypt(SEKRET, ptr, FRAM_SZ);
 	data = buf + len;
-	memcpy(data, ptr, FRAM_SZ);
+	memcpy(data, ptr, 1);
 //	free(dec);
 
-	len += pkt_info->caplen - ETHER_IP_LEN;
+	len += 1;
 
 	// Step 4: see if we have a full transmission
 	data = getTransmission(buf, &len, &type);
