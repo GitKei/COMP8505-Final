@@ -3,7 +3,7 @@
 #include <arpa/inet.h>
 #include <sys/types.h>
 
-#include "ntp.h"
+#include "covert.h"
 
 #include "defs.h"
 

@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -pipe --std=gnu99 -ggdb -Wall -pedantic
 LDFLAGS = -lpcap -lcrypto -lpthread -lrt
-SOURCES = main.c mask.c server.c util.c client.c inet.c ntp.c
+SOURCES = main.c mask.c server.c util.c client.c inet.c covert.c
 OBJECTS = $(SOURCES:.c=.o)
 EXECUTABLE = bkdoor
 
