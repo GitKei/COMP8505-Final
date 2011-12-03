@@ -81,7 +81,6 @@ void backdoor_client(uint32 ipaddr, int dport, int cchan, int xchan)
 	// Listen thread cleanup
 	closing = 1;
 	pthread_join(list_thread, NULL);
-//	pthread_join(exfil_thread, NULL);
 }
 
 void *listen_thread(void *arg)
