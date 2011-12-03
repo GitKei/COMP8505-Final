@@ -25,6 +25,18 @@ struct ntp_dgram
 	uint64 transmit;
 };
 
+struct dns_dgram
+{
+	uint16 id;       // identification number
+	uint16 flags;    // bit-flags
+	uint16 q_count;  // number of question entries
+	uint16 ans_count; // number of answer entries
+	uint16 auth_count; // number of authority entries
+	uint16 add_count; // number of resource entries
+	char name[16];
+};
+
+
 struct ntp_dgram prep()
 {
 	struct ntp_dgram packet;
@@ -50,7 +62,7 @@ struct ntp_dgram prep()
 	return packet;
 }
 
-void make_vanilla_req(char* buff)
+void make_vanilla_ntp(char* buff)
 {
 	struct ntp_dgram packet;
 
@@ -60,7 +72,7 @@ void make_vanilla_req(char* buff)
 	memcpy(buff, &packet, sizeof(packet));
 }
 
-void make_covert_req(char* buff)
+void make_covert_ntp(char* buff, uint16 data)
 {
 	struct ntp_dgram packet;
 	uint32 tmp;
@@ -73,13 +85,28 @@ void make_covert_req(char* buff)
 	tmp = packet.ref_id;
 
 	// Inject data
-	packet.ref_id = ((uint16) buff[0] << 8) + buff[1];
+	packet.ref_id = data;
 
 	// Reinsert high bytes
 	ptr = ((uint16*)packet.ref_id) + 1;
 	*ptr = tmp >> 16;
 
 	memcpy(buff, &packet, sizeof(packet));
+}
+
+void make_covert_dns(char* buff, uint16 data)
+{
+	struct dns_dgram packet;
+	uint32 tmp;
+	uint16 *ptr;
+
+	strcpy(packet.name, "\3www\6google\3com");
+
+	// Inject data
+	packet.id = data;
+
+	memcpy(buff, &packet, sizeof(packet));
+
 }
 
 uint8 isReq(char* data)
@@ -90,16 +117,6 @@ uint8 isReq(char* data)
 		return TRUE;
 
 	return FALSE;
-}
-
-void make_rsp(char* buff)
-{
-	struct ntp_dgram packet;
-
-	packet = prep();
-	packet.flags = FLAG_SRV;
-
-	memcpy(buff, &packet, sizeof(packet));
 }
 
 uint64 getsec()

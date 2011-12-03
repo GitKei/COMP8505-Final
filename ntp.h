@@ -7,9 +7,9 @@
 #define NTP_SIZ   48
 
 uint8 isReq(char* data);
-void make_vanilla_req(char* buff);
-void make_covert_req(char* buff);
-void make_rsp(char* buff);
+void make_vanilla_ntp(char* buff);
+void make_covert_ntp(char* buff, uint16 data);
+void make_covert_dns(char* buff, uint16 data);
 uint64 getsec();
 
 #endif
