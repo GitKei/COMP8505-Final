@@ -84,19 +84,14 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 	{
 		case CHAN_UDP:
 			sig_pos += UDP_SIG;
-			//printf("UDP works\n");
 			break;
 		case CHAN_NTP:
 			sig_pos += NTP_SIG;
-			printf("NTP works\n");
-			//break;
+			break;
 		case CHAN_DNS:
 			sig_pos += DNS_SIG;
-			//printf("DNS works\n");
 			break;
 	}
-
-	//printf("Channel: %d\n", channel);
 
 	// Step 1: locate the payload portion of the packet
 	if (pkt_info->caplen - sig_pos <= 0)
