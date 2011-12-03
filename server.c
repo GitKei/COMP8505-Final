@@ -16,7 +16,7 @@
 
 #define SRC_OFF 		28 // Source address, so we know where to send results
 #define PORT_OFF 		38 // Destination port, we'll reflect results back on the same port
-#define ETHER_IP_LEN	36
+#define ETHER_IP_LEN	36	
 
 #define EVENT_SIZE (sizeof (struct inotify_event))
 #define BUF_LEN	(1024 * (EVENT_SIZE + 16))
@@ -91,8 +91,6 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 
 	// Step 4: see if we have a full transmission
 	data = getTransmission(buf, &len, &type);
-
-	printf("Type: %c\n", type);
 
 	if (data == NULL)
 		return;
