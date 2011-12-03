@@ -74,6 +74,7 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 
 //			free(enc);
 			sendto(sock, frame, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
+			usleep(SLEEP_TIME);
 		}
 
 		free(trans);
