@@ -123,6 +123,9 @@ void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 	struct sockaddr_in saddr;
 	int tot_len;
 
+	memset(line, 0, MAX_LEN);
+	memset(resp, 0, MAX_LEN);
+
 	// Run the command, grab stdout
 	fp = popen(command, "r");
 
