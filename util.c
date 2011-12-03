@@ -62,7 +62,7 @@ FILE* open_file(char* fname, uint8 writeMode)
 	return file;
 }
 
-char* encrypt(char *key, char *msg, int size)
+void encrypt(char *key, char *msg, int size)
 {
 	static char*    result;
 	int             n = 0;
@@ -78,11 +78,12 @@ char* encrypt(char *key, char *msg, int size)
 
 	// Encryption occurs here
 	DES_cfb64_encrypt((unsigned char*)msg, (unsigned char*)result, size, &schedule, &key2, &n, DES_ENCRYPT);
-
-	return result;
+	memcpy(msg, result, size);
+	
+	free(result);
 }
 
-char* decrypt(char *key, char *msg, int size)
+void decrypt(char *key, char *msg, int size)
 {
 	static char*    result;
 	int             n = 0;
@@ -98,8 +99,9 @@ char* decrypt(char *key, char *msg, int size)
 
 	// Decryption occurs here
 	DES_cfb64_encrypt((unsigned char*)msg, (unsigned char*)result, size, &schedule, &key2, &n, DES_DECRYPT);
+	memcpy(msg, result, size);
 
-	return result;
+	free(result);
 }
 
 void calc_md5(const void *content, ssize_t len, char* md5)

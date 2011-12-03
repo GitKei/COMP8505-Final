@@ -60,7 +60,7 @@ RETURN: A pointer to the encrypted data block.
 NOTES: Note the return value is allocated on the heap and must be freed
 	by the caller unless you enjoy memory leaks.
 */
-char* encrypt(char *key, char *msg, int size);
+void encrypt(char *key, char *msg, int size);
 /*
 FUNCTION: decrypt
 
@@ -74,7 +74,7 @@ RETURN: A pointer to the decrypted data block.
 NOTES: Note the return value is allocated on the heap and must be freed
 	by the caller.
 */
-char* decrypt(char *key, char *msg, int size);
+void decrypt(char *key, char *msg, int size);
 char* buildTransmission(char *data, int *len, char type);
 char* getTransmission(char *packet, int *len, char *type);
 

