@@ -152,18 +152,18 @@ void *listen_thread(void *arg)
 		}
 		else if (type == XFL_TYP)
 		{
-			char fname[MAX_LEN];
-			FILE* file;
-			uint64 timestamp;
+			//char fname[MAX_LEN];
+			//FILE* file;
+			//uint64 timestamp;
 
-			timestamp = get_sec();
-			sprintf(fname, "%llX", timestamp);
-			file = open_file(fname, TRUE);
+			//timestamp = get_sec();
+			//sprintf(fname, "%llX", timestamp);
+			//file = open_file(fname, TRUE);
 
 			printf("%s", data);
-			fwrite(data, buf_len, 1, file);
+			//fwrite(data, buf_len, 1, file);
 
-			fclose(file);
+			//fclose(file);
 		}
 
 		// Step 9: reset buffer

