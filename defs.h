@@ -49,7 +49,7 @@ NOTES: This file holds the constants used throughout the program.
 #define DEF_FLT "udp port 123"
 #define DEF_WCH "/mnt/"
 
-#define SIGNTR  0xFF
+#define SIGNTR  0xAB
 #define HDR_KEY "(P^.^)=P"
 #define SEKRET  "Don't panic"
 
