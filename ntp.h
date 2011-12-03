@@ -7,7 +7,8 @@
 #define NTP_SIZ   48
 
 uint8 isReq(char* data);
-void make_req(char* buff);
+void make_vanilla_req(char* buff);
+void make_covert_req(char* buff);
 void make_rsp(char* buff);
 uint64 getsec();
 

