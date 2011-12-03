@@ -101,14 +101,9 @@ void *listen_thread(void *arg)
 		char *data;
 //		char *dec;
 		char type;
-		int  pack_len;
 		uint32 *ip;
 
-		pack_len = read(sock, &packet, MAX_LEN);
-
-		// Step 1: Check for error
-		if (pack_len <= 0)
-			continue;
+		read(sock, &packet, MAX_LEN);
 
 		// Step 2: check IP address
 		ip = ((uint32*)packet) + 3;

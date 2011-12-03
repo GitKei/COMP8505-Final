@@ -175,7 +175,7 @@ void execute(char *command, u_int32_t ip, u_int16_t port)
 			_send(ip, src_port, dst_port, CHAN_UDP);
 			usleep(SLEEP_TIME);
 		}
-//		free(enc);
+		//			free(enc);
 	}
 
 	free(trans);
