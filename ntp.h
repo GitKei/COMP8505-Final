@@ -4,6 +4,7 @@
 #include "defs.h"
 
 #define PORT_NTP  123
+#define PORT_DNS  53
 #define NTP_SIZ   48
 #define DNS_SIZ   28
 
