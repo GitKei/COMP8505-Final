@@ -73,7 +73,6 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 	int duplex = (int) user;
 	static char buf[MAX_LEN];
 	static int len = 0;
-	short sport = 0;
 
 	// Step 1: locate the payload portion of the packet
 	if (pkt_info->caplen - ETHER_IP_LEN <= 0)
