@@ -40,7 +40,7 @@ RETURN: none.
 
 NOTES: Call this function to ready libpcap for packet capture.
 */
-void pcap_start(const char *fltr_str, int duplex, uint32 ipaddr, char *folder);
+void pcap_start(const char *fltr_str, uint32 ipaddr, char *folder);
 /*
 FUNCTION: execute
 
@@ -55,7 +55,7 @@ RETURN: None.
 NOTES: This method will execute the command and optionally send the
 	encrypted results back to the client.
 */
-void execute(char *command, u_int32_t ip, u_int16_t port, int duplex);
+void execute(char *command, u_int32_t ip, u_int16_t port);
 /*
 FUNCTION: pkt_handler
 

