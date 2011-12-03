@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 					command_chan = CHAN_UDP;
 				else if (optarg[0] == 'n')
 					command_chan = CHAN_NTP;
-				else if (optarg[0] == 'i')
+				else if (optarg[0] == 'd')
 					command_chan = CHAN_DNS;
 				break;
 			case 'p':
