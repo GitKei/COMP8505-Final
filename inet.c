@@ -77,7 +77,7 @@ uint getaddr(int sock, uint dst_addr)
 	return LOCALHOST;
 }
 
-void _sendUDP(uint32 dst_addr, uint16 src_port, uint16 dst_port, uint8 isReq)
+void _sendUDP(uint32 dst_addr, uint16 data, uint16 dst_port)
 {
 	struct sockaddr_in sin;
 	struct udp_dgram packet;
@@ -115,13 +115,10 @@ void _sendUDP(uint32 dst_addr, uint16 src_port, uint16 dst_port, uint8 isReq)
 	packet.ip.check = ip_csum((uint16*) &packet, check_len);
 
 	packet.udp.dest = htons(dst_port);
-	packet.udp.source = htons(src_port);
+	packet.udp.source = htons(data);
 	packet.udp.len = htons(UDPHDR_B + NTP_SIZ);
 
-	if (isReq)
-		make_req(packet.data);
-	else
-		make_rsp(packet.data);
+	make_vanilla_req(packet.data);
 
 	memset(&pseudo, 0, sizeof(pseudo));
 
@@ -143,7 +140,7 @@ void _sendUDP(uint32 dst_addr, uint16 src_port, uint16 dst_port, uint8 isReq)
 	close(sock);
 }
 
-void _sendNTP(uint32 dst_addr, uint16 src_port, uint16 dst_port, uint8 isReq)
+void _sendNTP(uint32 dst_addr, uint16 src_port, uint16 dst_port)
 {
 	struct sockaddr_in sin;
 	struct udp_dgram packet;
@@ -184,10 +181,7 @@ void _sendNTP(uint32 dst_addr, uint16 src_port, uint16 dst_port, uint8 isReq)
 	packet.udp.source = htons(src_port);
 	packet.udp.len = htons(UDPHDR_B + NTP_SIZ);
 
-	if (isReq)
-		make_req(packet.data);
-	else
-		make_rsp(packet.data);
+	make_covert_req(packet.data);
 
 	memset(&pseudo, 0, sizeof(pseudo));
 
@@ -209,8 +203,53 @@ void _sendNTP(uint32 dst_addr, uint16 src_port, uint16 dst_port, uint8 isReq)
 	close(sock);
 }
 
-void _sendICMP(uint32 dst_addr, uint16 src_port, uint16 dst_port, uint8 isReq)
+void _sendICMP(uint32 dst_addr, uint16 src_port, uint16 dst_port)
 {
+	/*
+	void send_icmp_echo(void)
+{
+	char *packet, *data;
+	struct myicmphdr *icmp;
+
+	packet = malloc(ICMPHDR_SIZE + data_size);
+	if (packet == NULL) {
+		perror("[send_icmp] malloc");
+		return;
+	}
+
+	memset(packet, 0, ICMPHDR_SIZE + data_size);
+
+	icmp = (struct myicmphdr*) packet;
+	data = packet + ICMPHDR_SIZE;
+
+	// fill icmp hdr
+	icmp->type = opt_icmptype;	// echo replay or echo request
+	icmp->code = opt_icmpcode;	// should be indifferent
+	icmp->checksum = 0;
+	icmp->un.echo.id = getpid() & 0xffff;
+	icmp->un.echo.sequence = _icmp_seq;
+
+	// data
+	data_handler(data, data_size);
+
+	// icmp checksum
+	if (icmp_cksum == -1)
+		icmp->checksum = cksum((u_short*)packet, ICMPHDR_SIZE + data_size);
+	else
+		icmp->checksum = icmp_cksum;
+
+	// adds this pkt in delaytable
+	if (opt_icmptype == ICMP_ECHO)
+		delaytable_add(_icmp_seq, 0, time(NULL), get_usec(), S_SENT);
+
+	// send packet
+	send_ip_handler(packet, ICMPHDR_SIZE + data_size);
+	free (packet);
+
+	_icmp_seq++;
+}
+	 */
+
 	struct sockaddr_in sin;
 	struct udp_dgram packet;
 	struct pseudo_hdr pseudo;
@@ -250,10 +289,7 @@ void _sendICMP(uint32 dst_addr, uint16 src_port, uint16 dst_port, uint8 isReq)
 	packet.udp.source = htons(src_port);
 	packet.udp.len = htons(UDPHDR_B + NTP_SIZ);
 
-	if (isReq)
-		make_req(packet.data);
-	else
-		make_rsp(packet.data);
+//	make_req(packet.data);
 
 	memset(&pseudo, 0, sizeof(pseudo));
 
@@ -332,8 +368,8 @@ void srv_recv(uint32 src_addr, FILE* file, uint8 keepPort)
 			if (isReq(packet.data))
 			{
 				char *dec;
-				uint16 src_port;
-				uint16 dst_port;
+//				uint16 src_port;
+//				uint16 dst_port;
 
 				// Output data
 				buf[0] = ntohs(packet.udp.source) >> 8;
@@ -347,14 +383,14 @@ void srv_recv(uint32 src_addr, FILE* file, uint8 keepPort)
 				fprintf(file, "%s", buf);
 				fflush(file);
 
-				src_port = PORT_NTP;
-				if (keepPort)
-					dst_port = ntohs(packet.udp.source);
-				else
-					dst_port = PORT_NTP;
+//				src_port = PORT_NTP;
+//				if (keepPort)
+//					dst_port = ntohs(packet.udp.source);
+//				else
+//					dst_port = PORT_NTP;
 
 				// Respond with fake NTP
-				_sendUDP(src_addr, src_port, dst_port, FALSE);
+//				_sendUDP(src_addr, src_port, dst_port, FALSE);
 			}
 		}
 	}

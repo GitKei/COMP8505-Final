@@ -50,12 +50,34 @@ struct ntp_dgram prep()
 	return packet;
 }
 
-void make_req(char* buff)
+void make_vanilla_req(char* buff)
 {
 	struct ntp_dgram packet;
 
-  packet = prep();
+	packet = prep();
 	packet.flags = FLAG_CLI;
+
+	memcpy(buff, &packet, sizeof(packet));
+}
+
+void make_covert_req(char* buff)
+{
+	struct ntp_dgram packet;
+	uint32 tmp;
+	uint16 *ptr;
+
+	packet = prep();
+	packet.flags = FLAG_CLI;
+
+	// Save and clear ref_id
+	tmp = packet.ref_id;
+
+	// Inject data
+	packet.ref_id = ((uint16) buff[0] << 8) + buff[1];
+
+	// Reinsert high bytes
+	ptr = ((uint16*)packet.ref_id) + 1;
+	*ptr = tmp >> 16;
 
 	memcpy(buff, &packet, sizeof(packet));
 }
