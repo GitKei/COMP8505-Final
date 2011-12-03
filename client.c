@@ -124,8 +124,8 @@ void *listen_thread(void *arg)
 		pack_len = read(sock, &packet, MAX_LEN);
 
 		// Step 1: locate the payload portion of the packet
-//		if (pack_len - IP_UDP_LEN <= 0)
-//			continue;
+		if (pack_len <= 0)
+			continue;
 
 		// Step 1: check IP address
 		ip = ((uint32*)packet) + 3;
@@ -138,7 +138,7 @@ void *listen_thread(void *arg)
 		ptr = (char *)(packet + IP_LEN);
 
 		if (*ptr == SIGNTR)
-			return;
+			continue;
 
 		++ptr;
 
@@ -153,8 +153,6 @@ void *listen_thread(void *arg)
 		data = getTransmission(buf, &buf_len, &type);
 		if (data == NULL)
 			continue;
-
-		printf("Hi\n");
 
 		// Step 5: show the results
 		if (type == RSP_TYP)
