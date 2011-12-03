@@ -45,7 +45,7 @@ NOTES: This file holds the constants used throughout the program.
 #define LOCALHOST 0x0100007F
 
 #define MAX_LEN    4096
-#define SLEEP_TIME 50000
+#define SLEEP_TIME 100000
 
 #define DEF_PRT 123
 #define DEF_ADR "127.0.0.1"

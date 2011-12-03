@@ -166,6 +166,7 @@ char* getTransmission(char *packet, int *len, char *type)
 	int pass_len;
 	int tot_len;
 	int data_len;
+//	unsigned char l1, l2, l3;
 
 	pass_len = strlen(HDR_KEY);
 
@@ -175,7 +176,7 @@ char* getTransmission(char *packet, int *len, char *type)
 		return NULL;
 
 	// Get Length
-	tot_len = (packet[1] << 16) + (packet[2] << 8) + packet[3];
+	tot_len = (((uint8)packet[1]) << 16) + (((uint8)packet[2] << 8)) + ((uint8)packet[3]);
 	data_len = tot_len - pass_len;
 
 	// Check MD5
