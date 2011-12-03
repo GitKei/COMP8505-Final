@@ -92,7 +92,7 @@ void *listen_thread(void *arg)
 	while(!closing)
 	{
 		char packet[MAX_LEN];
-		char *ptr;
+		char *ptr = 0;
 		char *data;
 		char type;
 		uint32 *ip;

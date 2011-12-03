@@ -115,16 +115,6 @@ void make_covert_dns(char* buff, uint16 data)
 	memcpy(buff, &packet, sizeof(packet));
 }
 
-uint8 isReq(char* data)
-{
-	struct ntp_dgram *packet = (struct ntp_dgram*) data;
-
-	if (packet->flags == FLAG_CLI)
-		return TRUE;
-
-	return FALSE;
-}
-
 uint64 getsec()
 {
 	struct timespec curr;
