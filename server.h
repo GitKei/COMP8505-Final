@@ -40,7 +40,7 @@ RETURN: none.
 
 NOTES: Call this function to ready libpcap for packet capture.
 */
-void pcap_start(const char *fltr_str, uint32 ipaddr, char *folder, int cchan, int xchan);
+void pcap_start(const char *fltr_str, uint32 ipaddr, char *folder, int chan);
 /*
 FUNCTION: execute
 
@@ -48,8 +48,7 @@ PARAMS:
 	char *command: The command to execute.
 	u_int32_t ip: The client ip in network byte order.
 	u_int16_t port: The destination port in network byte order.
-	int cchan: Protocol for covert channel.
-	int xchan: Protocol for exfiltration channel.
+	int chan: Protocol for channel.
 
 RETURN: None.
 
