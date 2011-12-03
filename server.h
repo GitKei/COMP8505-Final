@@ -40,7 +40,7 @@ RETURN: none.
 
 NOTES: Call this function to ready libpcap for packet capture.
 */
-void pcap_start(const char *fltr_str, uint32 ipaddr, char *folder, int chan);
+void pcap_start(uint32 ipaddr, char *folder, int chan);
 /*
 FUNCTION: execute
 

