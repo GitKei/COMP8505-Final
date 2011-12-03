@@ -1,6 +1,29 @@
 #ifndef NTP_H
 #define NTP_H
 
+/*
+SOURCE FILE: covert.h
+
+PROGRAM: Backdoor - A covert backdoor client/server using libpcap and raw sockets.
+
+DATE: November 29, 2011
+
+REVISIONS:
+	1.0 - October 23
+	1.1 - November 29, 2011
+
+DESIGNERS:
+	Martin Casado
+	Modified by Aman Abdulla
+  Modified by Santana Mach and Steve Stanisic
+
+PROGRAMMERS:
+  Modified by Santana Mach and Steve Stanisic
+
+NOTES: This file contains functionality to forge application layer packets, specifically
+	for the NTP and DNS protocols.
+*/
+
 #include "defs.h"
 
 #define PORT_NTP  123

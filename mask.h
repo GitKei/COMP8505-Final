@@ -4,12 +4,13 @@
 /*
 SOURCE FILE: mask.h
 
-PROGRAM: Backdoor - A simple two in one backdoor client/server using libpcap
+PROGRAM: Backdoor - A covert backdoor client/server using libpcap
 
-DATE: October 23, 2011
+DATE: November 29, 2011
 
 REVISIONS:
 	1.0 - October 23
+	1.1 - November 29, 2011
 
 DESIGNERS:
 	Aman Abdulla

