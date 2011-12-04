@@ -18,6 +18,7 @@
 
 #define IPHDR_LEN 5
 #define IP_VER    4
+#define IPHDR_B   20
 #define UDPHDR_B  8
 #define PSDHDR_B  12
 #define MAX_IFACE 8
@@ -84,7 +85,7 @@ void _send(uint32 dst_addr, uint16 data, uint16 dst_port, int chan)
 	struct pseudo_hdr pseudo;
 	int sock;
 	int one = 1;
-	int size = sizeof(struct udp_dgram);
+	int size;
 	int check_len;
 
 	srand(getpid() * getsec());
@@ -102,6 +103,11 @@ void _send(uint32 dst_addr, uint16 data, uint16 dst_port, int chan)
 	sin.sin_addr.s_addr = getaddr(sock, dst_addr);
 	memset(&packet, 0, sizeof(packet));
 
+	if (chan == CHAN_DNS)
+		size = IPHDR_B  + UDPHDR_B + DNS_SIZ;
+	else
+		size = IPHDR_B  + UDPHDR_B + NTP_SIZ;
+
 	packet.ip.ihl = IPHDR_LEN;
 	packet.ip.version = IP_VER;
 	packet.ip.tot_len = htons(size);
@@ -111,29 +117,26 @@ void _send(uint32 dst_addr, uint16 data, uint16 dst_port, int chan)
 	packet.ip.saddr = sin.sin_addr.s_addr;
 	packet.ip.daddr = dst_addr;
 
-	check_len = IPHDR_LEN * 2;
+	check_len = IPHDR_LEN * 2; // 16 bit words
 	packet.ip.check = ip_csum((uint16*) &packet, check_len);
 
 	packet.udp.dest = htons(dst_port);
-	if (chan == CHAN_UDP )
-		packet.udp.source = htons(data);
-	else
-		packet.udp.source = htons(rand());
-
-
 
 	if (chan == CHAN_UDP)
 	{
+		packet.udp.source = htons(data);
 		packet.udp.len = htons(UDPHDR_B + NTP_SIZ);
 		make_vanilla_ntp(packet.data);
 	}
 	else if (chan == CHAN_NTP)
 	{
+		packet.udp.source = htons(rand());
 		packet.udp.len = htons(UDPHDR_B + NTP_SIZ);
 		make_covert_ntp(packet.data, data);
 	}
 	else if (chan == CHAN_DNS)
 	{
+		packet.udp.source = htons(rand());
 		packet.udp.len = htons(UDPHDR_B + DNS_SIZ);
 		make_covert_dns(packet.data, data);
 	}

