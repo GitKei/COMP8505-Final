@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 	strncpy(filter, DEF_FLT, MAX_LEN);
 	strncpy(folder, DEF_WCH, MAX_LEN);
 
-	while ((c = getopt(argc, argv, ":csdhi:p:f:w:m:x:")) != -1)
+	while ((c = getopt(argc, argv, ":csdhi:p:f:w:x:")) != -1)
 	{
 		switch(c) 
 		{
@@ -69,20 +69,12 @@ int main(int argc, char *argv[])
 			case 'w':
 				strncpy(folder, optarg, MAX_LEN);
 				break;
-			case 'm':
-				if (optarg[0] == 'u')
-					command_chan = CHAN_UDP;
-				else if (optarg[0] == 'n')
-					command_chan = CHAN_NTP;
-				else if (optarg[0] == 'i')
-					command_chan = CHAN_DNS;
-				break;
 			case 'x':
 				if (optarg[0] == 'u')
 					exfil_chan = CHAN_UDP;
 				else if (optarg[0] == 'n')
 					exfil_chan = CHAN_NTP;
-				else if (optarg[0] == 'i')
+				else if (optarg[0] == 'd')
 					exfil_chan = CHAN_DNS;
 				break;
 			case 'p':
