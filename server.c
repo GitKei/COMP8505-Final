@@ -108,7 +108,7 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 	if (len % FRAM_SZ != 0) // Check for frame
 		return;
 
-	data -= FRAM_SZ;
+	data -= FRAM_SZ - 1;
 	
 	decrypt(SEKRET, data, FRAM_SZ);
 

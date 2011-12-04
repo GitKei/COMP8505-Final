@@ -133,7 +133,7 @@ void *listen_thread(void *arg)
 		if (buf_len % FRAM_SZ != 0) // Check for frame
 			continue;
 		
-		data -= FRAM_SZ;
+		data -= FRAM_SZ - 1;
 
 		decrypt(SEKRET, data, FRAM_SZ);
 
