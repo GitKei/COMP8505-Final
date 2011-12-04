@@ -337,16 +337,6 @@ char* extract_udp(uint32 src_addr, char* data, int length)
 	return NULL;
 }
 
-void buildPacket(int offset, char data)
-{
-
-}
-
-void readPacket()
-{
-
-}
-
 void srv_recv(uint32 src_addr, FILE* file, uint8 keepPort)
 {
 	struct udp_dgram packet;

