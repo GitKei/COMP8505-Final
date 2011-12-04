@@ -16,7 +16,7 @@
 int closing;
 int channel;
 
-void backdoor_client(uint32 ipaddr, int dport, int chan)
+void backdoor_client(uint32 ipaddr, int chan)
 {
 	char command[MAX_LEN];
 	pthread_t list_thread;
@@ -25,9 +25,6 @@ void backdoor_client(uint32 ipaddr, int dport, int chan)
 
 	if (ipaddr == 0)
 		error("Invalid IP specified.");
-
-	if (!val_port(dport))
-		error("Invalid destination port specified.");
 
 	closing = 0;
 	pthread_create(&list_thread, NULL, listen_thread, &ipaddr);
@@ -179,12 +176,3 @@ void *listen_thread(void *arg)
 
 	return NULL;
 }
-
-int val_port(int port)
-{
-	if (0 < port && port < 65535)
-		return 1;
-	else 
-		return 0;
-}
-

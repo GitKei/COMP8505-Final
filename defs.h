@@ -47,7 +47,6 @@ NOTES: This file holds the constants used throughout the program.
 #define MAX_LEN    4096
 #define SLEEP_TIME 50000
 
-#define DEF_PRT 123
 #define DEF_ADR "127.0.0.1"
 #define DEF_FLT "udp port 123"
 #define DEF_WCH "/mnt/"
