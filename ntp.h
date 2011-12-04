@@ -6,7 +6,7 @@
 #define PORT_NTP  123
 #define PORT_DNS  53
 #define NTP_SIZ   48
-#define DNS_SIZ   28
+#define DNS_SIZ   32
 
 uint8 isReq(char* data);
 void make_vanilla_ntp(char* buff);
