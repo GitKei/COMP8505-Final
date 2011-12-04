@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 				else if (optarg[0] == 'n')
 					command_chan = CHAN_NTP;
 				else if (optarg[0] == 'i')
-					command_chan = CHAN_ICMP;
+					command_chan = CHAN_DNS;
 				break;
 			case 'x':
 				if (optarg[0] == 'u')
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 				else if (optarg[0] == 'n')
 					exfil_chan = CHAN_NTP;
 				else if (optarg[0] == 'i')
-					exfil_chan = CHAN_ICMP;
+					exfil_chan = CHAN_DNS;
 				break;
 			case 'p':
 				port = atoi(optarg);

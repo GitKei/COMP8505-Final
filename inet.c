@@ -77,7 +77,7 @@ uint getaddr(int sock, uint dst_addr)
 	return LOCALHOST;
 }
 
-void _sendUDP(uint32 dst_addr, uint16 data, uint16 dst_port)
+void _send(uint32 dst_addr, uint16 data, uint16 dst_port, int chan)
 {
 	struct sockaddr_in sin;
 	struct udp_dgram packet;
@@ -115,181 +115,18 @@ void _sendUDP(uint32 dst_addr, uint16 data, uint16 dst_port)
 	packet.ip.check = ip_csum((uint16*) &packet, check_len);
 
 	packet.udp.dest = htons(dst_port);
-	packet.udp.source = htons(data);
-	packet.udp.len = htons(UDPHDR_B + NTP_SIZ);
-
-	make_vanilla_req(packet.data);
-
-	memset(&pseudo, 0, sizeof(pseudo));
-
-	pseudo.saddr = packet.ip.saddr;
-	pseudo.daddr = packet.ip.daddr;
-	pseudo.proto = packet.ip.protocol;
-	pseudo.udp_len = packet.udp.len;
-	pseudo.udp = packet.udp;
-	memcpy(pseudo.data, &packet.data, NTP_SIZ);
-
-	check_len = (PSDHDR_B + UDPHDR_B + NTP_SIZ) / 2;
-	packet.udp.check = udp_csum((uint16*) &pseudo, check_len);
-
-	sin.sin_family = AF_INET;
-	sin.sin_port = packet.udp.dest;
-	sin.sin_addr.s_addr = packet.ip.daddr;
-
-	sendto(sock, &packet, size, 0, (struct sockaddr *) &sin, sizeof(sin));
-	close(sock);
-}
-
-void _sendNTP(uint32 dst_addr, uint16 src_port, uint16 dst_port)
-{
-	struct sockaddr_in sin;
-	struct udp_dgram packet;
-	struct pseudo_hdr pseudo;
-	int sock;
-	int one = 1;
-	int size = sizeof(struct udp_dgram);
-	int check_len;
-
-	srand(getpid() * getsec());
-
-	// Set up socket
-	sock = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
-	if(sock < 0)
-		error("Unable to open sending socket.");
-
-	// Tell kernel not to help us out
-	if(setsockopt(sock, IPPROTO_IP, IP_HDRINCL, &one, sizeof(one)) < 0)
-		error("Kernel won't allow IP header override.");
-
-	// Get an address we can use
-	sin.sin_addr.s_addr = getaddr(sock, dst_addr);
-	memset(&packet, 0, sizeof(packet));
-
-	packet.ip.ihl = IPHDR_LEN;
-	packet.ip.version = IP_VER;
-	packet.ip.tot_len = htons(size);
-	packet.ip.id = htonl(rand());
-	packet.ip.ttl = TTL;
-	packet.ip.protocol = IPPROTO_UDP;
-	packet.ip.saddr = sin.sin_addr.s_addr;
-	packet.ip.daddr = dst_addr;
-	
-	check_len = IPHDR_LEN * 2;
-	packet.ip.check = ip_csum((uint16*) &packet, check_len);
-
-	packet.udp.dest = htons(dst_port);
-	packet.udp.source = htons(src_port);
-	packet.udp.len = htons(UDPHDR_B + NTP_SIZ);
-
-	make_covert_req(packet.data);
-
-	memset(&pseudo, 0, sizeof(pseudo));
-
-	pseudo.saddr = packet.ip.saddr;
-	pseudo.daddr = packet.ip.daddr;
-	pseudo.proto = packet.ip.protocol;
-	pseudo.udp_len = packet.udp.len;
-	pseudo.udp = packet.udp;
-	memcpy(pseudo.data, &packet.data, NTP_SIZ);
-
-	check_len = (PSDHDR_B + UDPHDR_B + NTP_SIZ) / 2;
-	packet.udp.check = udp_csum((uint16*) &pseudo, check_len);
-
-	sin.sin_family = AF_INET;
-	sin.sin_port = packet.udp.dest;
-	sin.sin_addr.s_addr = packet.ip.daddr;
-
-	sendto(sock, &packet, size, 0, (struct sockaddr *) &sin, sizeof(sin));
-	close(sock);
-}
-
-void _sendICMP(uint32 dst_addr, uint16 src_port, uint16 dst_port)
-{
-	/*
-	void send_icmp_echo(void)
-{
-	char *packet, *data;
-	struct myicmphdr *icmp;
-
-	packet = malloc(ICMPHDR_SIZE + data_size);
-	if (packet == NULL) {
-		perror("[send_icmp] malloc");
-		return;
-	}
-
-	memset(packet, 0, ICMPHDR_SIZE + data_size);
-
-	icmp = (struct myicmphdr*) packet;
-	data = packet + ICMPHDR_SIZE;
-
-	// fill icmp hdr
-	icmp->type = opt_icmptype;	// echo replay or echo request
-	icmp->code = opt_icmpcode;	// should be indifferent
-	icmp->checksum = 0;
-	icmp->un.echo.id = getpid() & 0xffff;
-	icmp->un.echo.sequence = _icmp_seq;
-
-	// data
-	data_handler(data, data_size);
-
-	// icmp checksum
-	if (icmp_cksum == -1)
-		icmp->checksum = cksum((u_short*)packet, ICMPHDR_SIZE + data_size);
+	if (chan == CHAN_UDP)
+		packet.udp.source = htons(data);
 	else
-		icmp->checksum = icmp_cksum;
-
-	// adds this pkt in delaytable
-	if (opt_icmptype == ICMP_ECHO)
-		delaytable_add(_icmp_seq, 0, time(NULL), get_usec(), S_SENT);
-
-	// send packet
-	send_ip_handler(packet, ICMPHDR_SIZE + data_size);
-	free (packet);
-
-	_icmp_seq++;
-}
-	 */
-
-	struct sockaddr_in sin;
-	struct udp_dgram packet;
-	struct pseudo_hdr pseudo;
-	int sock;
-	int one = 1;
-	int size = sizeof(struct udp_dgram);
-	int check_len;
-
-	srand(getpid() * getsec());
-
-	// Set up socket
-	sock = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
-	if(sock < 0)
-		error("Unable to open sending socket.");
-
-	// Tell kernel not to help us out
-	if(setsockopt(sock, IPPROTO_IP, IP_HDRINCL, &one, sizeof(one)) < 0)
-		error("Kernel won't allow IP header override.");
-
-	// Get an address we can use
-	sin.sin_addr.s_addr = getaddr(sock, dst_addr);
-	memset(&packet, 0, sizeof(packet));
-
-	packet.ip.ihl = IPHDR_LEN;
-	packet.ip.version = IP_VER;
-	packet.ip.tot_len = htons(size);
-	packet.ip.id = htonl(rand());
-	packet.ip.ttl = TTL;
-	packet.ip.protocol = IPPROTO_UDP;
-	packet.ip.saddr = sin.sin_addr.s_addr;
-	packet.ip.daddr = dst_addr;
-
-	check_len = IPHDR_LEN * 2;
-	packet.ip.check = ip_csum((uint16*) &packet, check_len);
-
-	packet.udp.dest = htons(dst_port);
-	packet.udp.source = htons(src_port);
+		packet.udp.source = htons(rand());
 	packet.udp.len = htons(UDPHDR_B + NTP_SIZ);
 
-//	make_req(packet.data);
+	if (chan == CHAN_UDP)
+		make_vanilla_ntp(packet.data);
+	else if (chan == CHAN_NTP)
+		make_covert_ntp(packet.data, data);
+	else if (chan == CHAN_DNS)
+		make_covert_dns(packet.data, data);
 
 	memset(&pseudo, 0, sizeof(pseudo));
 
@@ -308,83 +145,6 @@ void _sendICMP(uint32 dst_addr, uint16 src_port, uint16 dst_port)
 	sin.sin_addr.s_addr = packet.ip.daddr;
 
 	sendto(sock, &packet, size, 0, (struct sockaddr *) &sin, sizeof(sin));
-	close(sock);
-}
-
-char* extract_udp(uint32 src_addr, char* data, int length)
-{
-	struct udp_dgram *packet = (struct udp_dgram*) data;
-	char *buf = malloc(3);
-
-	if (packet->ip.saddr == src_addr && packet->udp.dest == htons(PORT_NTP))
-	{
-		if (isReq(packet->data))
-		{
-			char *dec;
-
-			// Output data
-			buf[0] = ntohs(packet->udp.source) >> 8;
-			buf[1] = ntohs(packet->udp.source);
-			buf[2] = 0;
-
-			dec = decrypt(SEKRET, buf, 2);
-			memcpy(buf, dec, 2);
-			free(dec);
-
-			return buf;
-		}
-	}
-	return NULL;
-}
-
-void srv_recv(uint32 src_addr, FILE* file, uint8 keepPort)
-{
-	struct udp_dgram packet;
-	int sock;
-	char buf[3];
-
-	sock = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
-	if(sock < 0)
-	{
-		perror("receive socket cannot be open. Are you root?");
-		exit(1);
-	}
-
-	while (1)
-	{
-		read(sock, &packet, sizeof(struct udp_dgram));
-		if (packet.ip.saddr == src_addr && packet.udp.dest == htons(PORT_NTP))
-		{
-			if (isReq(packet.data))
-			{
-				char *dec;
-//				uint16 src_port;
-//				uint16 dst_port;
-
-				// Output data
-				buf[0] = ntohs(packet.udp.source) >> 8;
-				buf[1] = ntohs(packet.udp.source);
-				buf[2] = 0;
-
-				dec = decrypt(SEKRET, buf, 2);
-				memcpy(buf, dec, 2);
-				free(dec);
-
-				fprintf(file, "%s", buf);
-				fflush(file);
-
-//				src_port = PORT_NTP;
-//				if (keepPort)
-//					dst_port = ntohs(packet.udp.source);
-//				else
-//					dst_port = PORT_NTP;
-
-				// Respond with fake NTP
-//				_sendUDP(src_addr, src_port, dst_port, FALSE);
-			}
-		}
-	}
-
 	close(sock);
 }
 
