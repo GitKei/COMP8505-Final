@@ -148,7 +148,7 @@ void *listen_thread(void *arg)
 		// Step 8: show the results
 		if (type == RSP_TYP)
 		{
-			printf("Data: %s", data);
+			printf("%s", data);
 		}
 		else if (type == XFL_TYP)
 		{
