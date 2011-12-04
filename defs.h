@@ -40,7 +40,7 @@ NOTES: This file holds the constants used throughout the program.
 #define ETHER_IP_UDP_LEN 44
 #define ETHER_HEADER_LEN 16
 #define UDP_SIG 20
-#define NTP_SIG 46
+#define NTP_SIG 40
 #define DNS_SIG 28
 #define LOCALHOST 0x0100007F
 

@@ -96,7 +96,7 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 	ptr = (char *)(packet + sig_pos);
 
 	// Step 2: check for signature
-	if(*ptr == SIGNTR)
+	if (*ptr != (char)SIGNTR)
 		return;
 
 	++ptr;

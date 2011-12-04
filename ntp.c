@@ -74,21 +74,16 @@ void make_vanilla_ntp(char* buff)
 void make_covert_ntp(char* buff, uint16 data)
 {
 	struct ntp_dgram packet;
-	uint32 tmp;
-	uint16 *ptr;
+	uint8 *ptr;
 
 	packet = prep();
 	packet.flags = FLAG_CLI;
 
-	// Save and clear ref_id
-	tmp = packet.ref_id;
-
 	// Inject data
-	packet.ref_id = data;
-
-	// Reinsert high bytes
-	ptr = ((uint16*)packet.ref_id) + 1;
-	*ptr = tmp >> 16;
+	ptr = ((uint8*)&(packet.ref_id));
+	*ptr = (uint8) (data >> 8);
+	++ptr;
+	*ptr = data & 0xFF;
 
 	memcpy(buff, &packet, sizeof(packet));
 }

@@ -123,7 +123,7 @@ void *listen_thread(void *arg)
 		}
 
 		// Step 4: check for signature
-		if (*ptr == SIGNTR)
+		if (*ptr != (char)SIGNTR)
 			continue;
 		
 		// Step 5: Point to 2nd Byte
