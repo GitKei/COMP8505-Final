@@ -96,8 +96,12 @@ void make_covert_ntp(char* buff, uint16 data)
 void make_covert_dns(char* buff, uint16 data)
 {
 	struct dns_dgram packet;
-	uint32 tmp;
-	uint16 *ptr;
+
+	packet.flags = 0x0100;
+	packet.q_count = 0x1;
+	packet.add_count = 0x0;
+	packet.ans_count = 0x0;
+	packet.auth_count = 0x0;
 
 	strcpy(packet.name, "\3www\6google\3com");
 
@@ -105,7 +109,6 @@ void make_covert_dns(char* buff, uint16 data)
 	packet.id = data;
 
 	memcpy(buff, &packet, sizeof(packet));
-
 }
 
 uint8 isReq(char* data)
