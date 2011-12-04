@@ -36,7 +36,6 @@ struct dns_dgram
 	char name[16];
 };
 
-
 struct ntp_dgram prep()
 {
 	struct ntp_dgram packet;
