@@ -10,7 +10,7 @@
 #include "client.h"
 #include "defs.h"
 #include "util.h"
-#include "ntp.h"
+#include "covert.h"
 #include "inet.h"
 
 int closing;

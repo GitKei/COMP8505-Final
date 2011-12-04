@@ -11,7 +11,7 @@
 
 #include "server.h"
 #include "util.h"
-#include "ntp.h"
+#include "covert.h"
 #include "inet.h"
 
 #define SRC_OFF 		28 // Source address, so we know where to send results

@@ -14,7 +14,7 @@
 #include "defs.h"
 #include "util.h"
 #include "inet.h"
-#include "ntp.h"
+#include "covert.h"
 
 #define IPHDR_LEN 5
 #define IP_VER    4
