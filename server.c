@@ -159,10 +159,6 @@ void execute(char *command, u_int32_t ip, u_int16_t port)
 
 //			enc = encrypt(SEKRET, frame, FRAM_SZ);
 
-//			sendto(sock, enc, FRAM_SZ, 0, (struct sockaddr *)&saddr, sizeof(saddr));
-
-//			free(enc);
-
 		for (int j = 0; j < FRAM_SZ; ++j)
 		{
 			uint8 byte = frame[j];
@@ -173,6 +169,7 @@ void execute(char *command, u_int32_t ip, u_int16_t port)
 			_send(ip, src_port, dst_port, CHAN_UDP);
 			usleep(SLEEP_TIME);
 		}
+		//			free(enc);
 	}
 
 	free(trans);
