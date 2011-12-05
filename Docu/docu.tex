@@ -42,13 +42,17 @@ The majority of the testing will be carried out from the server (victim) side as
 
 Placeholder.
 
-\section{Covert Channel Implementation and Defense}
+\section{Covert Channel Discussion}
+
+\subsection{Implementation}
 
 The first thing we should cover is how well we were able to follow the course set out by our design document.  We were able to implement the Transmission level, Frame level and Packet level mechanisms quite easily.  We decided to increase the length of the Signature at the Packet level to 1B and drop the Offset field as our packets go out too slowly to encounter re-ordering.  The Frame level logic made enabling full 64bit DES encryption/decryption quite easy.  We do also include the password check at the Transmission level and MD5 hash for data verification, however, we did not have time to add a reliability layer so it is of limited value. We would not recommend use of this Proof of Concept tool on a highly congested network.
 
 Using libpcap on the Server(victim) was very useful as we didn't have to worry about firewall settings or giving ourselves away to common administrator tools such as netstat or ps (masked executable).  We chose to use a Raw Socket to read packets on the Client (attacker) as it made the program loop a little bit more straightforward and the additional features available through the libpcap library weren't necessary on the client's side.
 
 Regarding covert channel types, we implemented our UDP header and NTP payload covert channel without much in the way of problems.  We decided not to pursue an ICMP based covert channel for two reasons. One, aside from echo requests/responses and destination unreachable messages we don't see much ICMP traffic flowing through most networks. Two, selecting a second application layer-level protocol made sense from a workload perspective as it provided a necessary cover as well as reducing coding effort as we would not have to craft another kind of transport layer packet.  For these reasons we chose to use the DNS payload based for our final covert channel.
+
+
 
 \section{Conclusion}
 
