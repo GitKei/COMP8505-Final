@@ -44,7 +44,7 @@ If you wish to change the watch folder, the easiest way to do this remotely is t
 \section{Testing Design}
 
 The majority of the testing will be carried out from the server (victim) side as this is where monitoring.
-The signature for our rootkit is currently ``0xAB" with the data encrypted in the next byte.  The signature
+The signature for our rootkit is currently `0xAB' with the data encrypted in the next byte.  The signature
 can also be configured at compile time, which will be harder for analysts and IDS to detect.
 \\
 
@@ -104,9 +104,10 @@ As shown above, both the IP and UDP checksums are correct.\\
   \label{fig:udp_sig}
 \end{figure}
 
-For the UDP channel, the signature and data are hidden in the source port.  The signature ``AB"
+For the UDP channel, the signature and data are hidden in the source port.  The signature `AB'
 can be seen on the first byte with the data encrypted into the second byte.  This results in
-a high source port, which is not unusual.
+a high source port, which is not unusual.  This test was performed using the UDP switch
+in the arguments and monitored using Wireshark.
 
 \clearpage
 
@@ -121,7 +122,8 @@ a high source port, which is not unusual.
 \end{figure}
 
 The signature and data for the NTP channel is slipped into the Reference Clock ID in the NTP header.
-This would be the first two bytes of the ID field.  
+This would be the first two bytes of the ID field.  This test was performed using the NTP switch
+in the arguments and monitored using Wireshark.
 
 \subsection{Test \# 4 - DNS Channel}
 
@@ -135,7 +137,8 @@ This would be the first two bytes of the ID field.
 
 The field used for the DNS channel is the Transaction ID in the DNS Header.  Similar to the other channels,
 the ``AB" signature is placed in the first byte of the field specified.  The transaction id is used to 
-match request and reply packets; however, it is not likely monitored.\\
+match request and reply packets; however, it is not likely monitored.  This test was performed using the NTP
+switch in the arguments and monitored using Wireshark.\\
 
 \clearpage
 
@@ -149,7 +152,7 @@ match request and reply packets; however, it is not likely monitored.\\
   \label{fig:commands}
 \end{figure}
 
-These are some of the common commands that are used in a Unix system.  This also demonstrates that
+This test shows some of the common commands that are used in a Unix system.  This also demonstrates that
 the commands work for all three types of backdoor channel.
 
 \clearpage
@@ -165,6 +168,14 @@ the commands work for all three types of backdoor channel.
   \label{fig:exfiltration}
 \end{figure}
 
+The default directory for exfiltration is /mnt/ but it can be changed through a switch in
+the arguments for the backdoor.  For this test, we used the `echo' tool to create the
+file `a.txt' which will notify the watch and exfiltrate the new file.  The client will
+print the content to the screen as well as create a file with the current timestamp.\\
+\\
+We included debug messages for this test to show which file is being exfiltrated; these
+messages will not display on the actual program.
+
 \clearpage
 
 \subsection{Test \# 7 - Changing Watch Directory}
@@ -176,6 +187,11 @@ the commands work for all three types of backdoor channel.
   \caption{Example of Watch Directory}
   \label{fig:watch}
 \end{figure}
+
+In order to switch the exfiltration watch directory, the client must send the command to
+kill the current backdoor and the new one at the same time.  This is because the client
+would no longer be able to send commands if there are no servers to receive.  This test
+demonstrates the results of both methods.
 
 \clearpage
 
