@@ -31,10 +31,55 @@ NOTES: This file contains functionality to forge application layer packets, spec
 #define NTP_SIZ   48
 #define DNS_SIZ   32
 
-uint8 isReq(char* data);
+/*
+FUNCTION: make_vanilla_ntp
+
+PARAMS:
+	char* buff: The buffer to place the request in.
+
+RETURN: none.
+
+NOTES: Call this function to make a standard NTP packet.
+*/
 void make_vanilla_ntp(char* buff);
+
+/*
+FUNCTION: make_covert_ntp
+
+PARAMS:
+	char* buff: The buffer to place the request in.
+	uint16 data: The covert word to hide in the ref_id.
+
+RETURN: none.
+
+NOTES: Call this function to make an NTP packet with a covert word
+	in the low bytes of the ref_id.
+*/
 void make_covert_ntp(char* buff, uint16 data);
+
+/*
+FUNCTION: make_covert_dns
+
+PARAMS:
+	char* buff: The buffer to place the request in.
+	uint16 data: The covert word to hide in the ref_id.
+
+RETURN: none.
+
+NOTES: Call this function to make an DNS packet with a covert word
+	in the transaction id.
+*/
 void make_covert_dns(char* buff, uint16 data);
+
+/*
+FUNCTION: getsec
+
+PARAMS: none.
+
+RETURN: The number of seconds since the epoch.
+
+NOTES: Call this function to get the number of seconds since the epoch.
+*/
 uint64 getsec();
 
 #endif

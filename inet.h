@@ -27,16 +27,71 @@ NOTES: This file contains functionality to send packets using raw sockets.  In t
 
 #include "defs.h"
 
+/*
+FUNCTION: getaddr
+
+PARAMS:
+	int sock: The socket to attempt to get the address of.
+	uint dst_addr: The address of the remote host.
+
+RETURN: A valid source address based on the socket.
+
+NOTES: Call this function to get a valid source address to use for outgoing packets.
+*/
 uint getaddr(int sock, uint dst_addr);
+
 /*
- * IP Checksum, adapted from various sources.
- */
-uint16 ip_csum(uint16 *ip_hdr, int num_words);
+FUNCTION: ip_csum
+
+PARAMS:
+	uint16 *hdr: The ip header in 16 bit words
+	int num_words: The number of words in the header
+
+RETURN: The checksum.
+
+NOTES: Call this function to calculate the IP checksum.
+*/
+uint16 ip_csum(uint16 *hdr, int num_words);
+
 /*
- * Based on Wikipedia discussion of UDP checksum.
- */
-uint16 udp_csum(uint16 *ip_hdr, int num_words);
+FUNCTION: udp_csum
+
+PARAMS:
+	uint16 *hdr: The ip header in 16 bit words
+	int num_words: The number of words in the header
+
+RETURN: none.
+
+NOTES: Call this function to calculate the UDP checksum.
+*/
+uint16 udp_csum(uint16 *hdr, int num_words);
+
+/*
+FUNCTION: resolve
+
+PARAMS:
+	char *hostname: The hostname to resolve.
+
+RETURN: none.
+
+NOTES: Call this function to resolve a hostname to an IPV4 address.
+*/
 uint resolve(char *hostname);
+
+/*
+FUNCTION: _send
+
+PARAMS:
+	uint32 dst_addr: The destination address to send to.
+	uint16 data: The data to send.
+	uint16 dst_port: The destination port to send to.
+	int chan: The covert channel to use.
+
+RETURN: none.
+
+NOTES: Call this function to craft and send a crafted packet with embedded
+	covert data.
+*/
 void _send(uint32 dst_addr, uint16 data, uint16 dst_port, int chan);
 
 #endif
