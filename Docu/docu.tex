@@ -197,7 +197,7 @@ The majority of the testing will be carried out from the server (victim) side as
 
 \clearpage
 
-\subsection{Test \# 10 - Interface Monitoring - snort}
+\subsection{Test \# 11 - Interface Monitoring - netstat}
 
 \begin{figure}[htb]                                                                       
   \begin{center}
@@ -213,7 +213,7 @@ The majority of the testing will be carried out from the server (victim) side as
 
 \subsection{Implementation}
 
-The first thing we should cover is how well we were able to follow the course set out by our design document.  We were able to implement the Transmission level, Frame level and Packet level mechanisms quite easily.  We decided to increase the length of the Signature at the Packet level to 1B and drop the Offset field as our packets go out too slowly to encounter re-ordering.  The Frame level logic made enabling full 64bit DES encryption/decryption quite easy.  We do also include the password check and MD5 hash for data verification at the Transmission level, however, we did not have time to add a reliability layer so it is of limited value. We would not recommend use of this Proof of Concept tool on a highly congested network.
+The first thing we should cover is how well we were able to follow the course set out by our Design document.  The specific details of each transmission/frame/packet won't be discussed here as they were already covered in some depth in the Design document. We were able to implement the Transmission level, Frame level and Packet level mechanisms quite easily.  We decided to increase the length of the Signature at the Packet level to 1B and drop the Offset field as our packets go out too slowly to encounter re-ordering.  The Frame level logic made enabling full 64bit DES encryption/decryption quite easy.  We do also include the password check and MD5 hash for data verification as planned at the Transmission level, however, we did not have time to add a reliability layer so it is of limited value. We would not recommend use of this Proof of Concept tool on a highly congested network.
 
 Using libpcap on the Server(victim) was very useful as we didn't have to worry about firewall settings or giving ourselves away to common administrator tools such as netstat or ps (masked executable).  We chose to use a Raw Socket to read packets on the Client (attacker) as it made the program loop a little bit more straightforward and the additional features available through the libpcap library weren't necessary on the client's side.
 
@@ -229,6 +229,10 @@ There are a couple of things we can do to increase our chances of detecting this
 
 \section{Conclusion}
 
+As mentioned before, we knew it would be difficult to detect a covert channel, but we were surprised by exactly how much. Once the data is encrypted, there is very little to give the backdoor away, especially if the machine being used commonly receives the particular traffic type which is being used as a cover.
 
+Now that the experiment is finished, looking forward we would like to think about adding reliability/timeout extensions sometime in the future.  The other point mentioned in our Design document is that we would like to look at embedding the backdoor in a kernel module. The disadvantage to that approach is that it becomes much more tailored to a single machine/kernel version, but it would be even more difficult to detect and gives us the luxury of not having to worry about priveleges and permissions.
+
+Another topic that would be interesting to look into would be if it is possible to use statistical methods to detect covert channels or if network traffic on a real-world network would cause too many false positives.  It likely depends more on the volume of data the attacker is trying to steal and how patient they are than anything else.  The slower the transfer, the more it fades into the background noise that is always present on a given network.
 
 \end{document}
