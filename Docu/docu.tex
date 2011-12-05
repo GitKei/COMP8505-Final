@@ -16,15 +16,29 @@
 
 \section{Introduction}
 
-The 
+Placeholder.
 
 \section{Usage Instructions}
 
-Placeholder.
+Installation is not required, the functionality of the program is controlled by command-line switches, simply copy the binary to a surreptitious location on the target machine and either launch it manually or add it to a startup script.
+
+To compile the program from source, the libpcap and openssl development libraries will be required.  Building the program from source should be possible with any version of GCC that supports at least the gnu99 C standard using the provided makefile.  Note, the makefile will also set the setuid bit on the resulting executable as the program requires elevated priveleges to open raw sockets.
+
+The available command-line flags are:
+	printf("Usage: %s [options]\n", name);
+	printf(" -c Use client mode: Act as master.\n");
+	printf(" -s Use server mode: Act as backdoor. [default]\n");
+	printf(" -h Show this help listing.\n");
+	printf(" -i <arg> Remote host address for client mode. [default=127.0.0.1]\n");
+	printf(" -f <arg> Libpcap filter to use. [default=udp port 123]\n");
+	printf(" -w <arg> Folder to watch. [default=/root]\n");
+	printf(" -x [und] Covert channel to use. [default=udp]\n");
+	printf(" EXAMPLES:\t %s -c -i 192.168.0.1\n", name);
+	printf(" EXAMPLES:\t %s -s -i 192.168.0.2 -f udp port 53\n", name);
 
 \section{Testing Design}
 
-Placeholder.
+The majority of the testing will be carried out from the server (victim) side as this is where monitoring
 
 \section{Testing Data}
 
