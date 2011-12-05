@@ -17,7 +17,11 @@
 
 \section{Introduction}
 
-Placeholder.
+The purpose of this experiment was to see how successful we could be in making a covert channel program that would be difficult to detect by system and network administrators. The extent to which this was possible was somewhat surprising to us using tools like linux's raw sockets and the libpcap library.  As our Testing Data shows, common system monitoring  tools, IDSes, and even packet monitoring are little help.  If you don't know what you're looking for, you're unlikely to find it.
+
+Our general strategy was to hide a very small amount of data in certain marked packets and craft the rest of the packet to look like a legitimate request so as not to arouse suspicion. For testing purposes, our data transfer is reasonably fast, however, in a real world setting a channel of this type would likely be limited to a few packets (and therefore bytes) per minute.
+
+We did have to reduce the scope of our program somewhat as noted in the Covert Channel Discussion section, but for the most part we found the work done in the early planning stages to be a very useful guide.  Given that we were able to follow the design quite closely, building the missing features is something we would like to keep in mind for the future.
 
 \section{Usage Instructions}
 
@@ -61,6 +65,14 @@ can also be configured at compile time, which will be harder for analysts and ID
 6 & Exfiltrate file. & bkdoor\newline echo & File is exfiltrated from the server. & Yes\\
 \hline
 7 & Changing watch\newline directory. & bkdoor & Execute new server with new watching directory & Yes\\
+\hline
+8 & Resource Monitoring & htop & Backdoor should be indistinguishable from legitimate processes & Yes\\
+\hline
+9 & Process Monitoring & ps & Backdoor should be indistinguishable from legitimate processes & Yes\\
+\hline
+10 & Network Monitoring & snort & Backdoor should not trigger any alerts & Yes\\
+\hline
+11 & Interface Monitoring & netstat & Backdoor should listening mechanisms should not be visible & Yes\\
 \hline
 \end{tabularx}
 
@@ -167,16 +179,78 @@ the commands work for all three types of backdoor channel.
 
 \clearpage
 
-\section{Covert Channel Implementation and Defense}
+\subsection{Test \# 8 - Resource Monitoring - htop}
 
-The first thing we should cover is how well we were able to follow the course set out by our design document.  We were able to implement the Transmission level, Frame level and Packet level mechanisms quite easily.  We decided to increase the length of the Signature at the Packet level to 1B and drop the Offset field as our packets go out too slowly to encounter re-ordering.  The Frame level logic made enabling full 64bit DES encryption/decryption quite easy.  We do also include the password check at the Transmission level and MD5 hash for data verification, however, we did not have time to add a reliability layer so it is of limited value. We would not recommend use of this Proof of Concept tool on a highly congested network.
+\begin{figure}[htb]                                                                       
+  \begin{center}
+    \includegraphics[width=0.9\textwidth]{Pictures/htop.png}
+  \end{center}
+  \caption{Htop Monitoring}
+  \label{fig:htop}
+\end{figure}
+
+\clearpage
+
+\subsection{Test \# 9 - Process Monitoring - ps}
+
+\begin{figure}[htb]                                                                       
+  \begin{center}
+    \includegraphics[width=0.9\textwidth]{Pictures/ps.png}
+  \end{center}
+  \caption{Ps Monitoring}
+  \label{fig:ps}
+\end{figure}
+
+\clearpage
+
+\subsection{Test \# 10 - Network Monitoring - snort}
+
+\begin{figure}[htb]                                                                       
+  \begin{center}
+    \includegraphics[width=0.9\textwidth]{Pictures/snort.png}
+  \end{center}
+  \caption{Snort Monitoring}
+  \label{fig:snort}
+\end{figure}
+
+\clearpage
+
+\subsection{Test \# 11 - Interface Monitoring - netstat}
+
+\begin{figure}[htb]                                                                       
+  \begin{center}
+    \includegraphics[width=0.9\textwidth]{Pictures/netstat.png}
+  \end{center}
+  \caption{Netstat Monitoring}
+  \label{fig:netstat}
+\end{figure}
+
+\clearpage
+
+\section{Covert Channel Discussion}
+
+\subsection{Implementation}
+
+The first thing we should cover is how well we were able to follow the course set out by our Design document.  The specific details of each transmission/frame/packet won't be discussed here as they were already covered in some depth in the Design document. We were able to implement the Transmission level, Frame level and Packet level mechanisms quite easily.  We decided to increase the length of the Signature at the Packet level to 1B and drop the Offset field as our packets go out too slowly to encounter re-ordering.  The Frame level logic made enabling full 64bit DES encryption/decryption quite easy.  We do also include the password check and MD5 hash for data verification as planned at the Transmission level, however, we did not have time to add a reliability layer so it is of limited value. We would not recommend use of this Proof of Concept tool on a highly congested network.
 
 Using libpcap on the Server(victim) was very useful as we didn't have to worry about firewall settings or giving ourselves away to common administrator tools such as netstat or ps (masked executable).  We chose to use a Raw Socket to read packets on the Client (attacker) as it made the program loop a little bit more straightforward and the additional features available through the libpcap library weren't necessary on the client's side.
 
 Regarding covert channel types, we implemented our UDP header and NTP payload covert channel without much in the way of problems.  We decided not to pursue an ICMP based covert channel for two reasons. One, aside from echo requests/responses and destination unreachable messages we don't see much ICMP traffic flowing through most networks. Two, selecting a second application layer-level protocol made sense from a workload perspective as it provided a necessary cover as well as reducing coding effort as we would not have to craft another kind of transport layer packet.  For these reasons we chose to use the DNS payload based for our final covert channel.
 
+\subsection{Defense}
+
+As we saw from the testing section, detecting a cleverly hidden backdoor is nearly impossible.  The fact that the packets look like perfectly legitimate requests certainly does not make a network administrators job easier. If we decided to track all traffic types, we could look for an increase in a certain request type, but this isn't an ideal solution. Simply slowing down transmission should make it stand out less or the attacker could simply switch between signatures; this could also potentially cause a large number of false positives as legitimate usage patterns change.
+
+A cleverly hidden backdoor isn't impossible to detect on a compromised system, but monitoring a large number of systems with enough attention to detail could potentially be very time consuming.  The first thing an administrator should look for are setuid executables, there should be a very small number of these, if any on a given system.  We've already seen that the netstat, top and ps utilities are unable to give us any useful information. 
+
+There are a couple of things we can do to increase our chances of detecting this type of activity at the sys-admin level. We can use log-monitoring applications to hopefully detect the initial intrusion; if this is an inside job by a legitimate user, this may be difficult.  If we have a relatively static configuration, we can audit all binary executables using MD5 or SHA1 hashes. If users are required to install or download things regularly, this may be too time-consuming in practice.
+
 \section{Conclusion}
 
-Placeholder.
+As mentioned before, we knew it would be difficult to detect a covert channel, but we were surprised by exactly how much. Once the data is encrypted, there is very little to give the backdoor away, especially if the machine being used commonly receives the particular traffic type which is being used as a cover.
+
+Now that the experiment is finished, looking forward we would like to think about adding reliability/timeout extensions sometime in the future.  The other point mentioned in our Design document is that we would like to look at embedding the backdoor in a kernel module. The disadvantage to that approach is that it becomes much more tailored to a single machine/kernel version, but it would be even more difficult to detect and gives us the luxury of not having to worry about priveleges and permissions.
+
+Another topic that would be interesting to look into would be if it is possible to use statistical methods to detect covert channels or if network traffic on a real-world network would cause too many false positives.  It likely depends more on the volume of data the attacker is trying to steal and how patient they are than anything else.  The slower the transfer, the more it fades into the background noise that is always present on a given network.
 
 \end{document}
