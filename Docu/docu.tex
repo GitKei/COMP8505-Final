@@ -204,7 +204,7 @@ demonstrates the results of both methods.
   \label{fig:htop}
 \end{figure}
 
-\clearpage
+While the process does show up in htop, it would be very difficult to distinguish from any of the other running versions of udevd.  Resource usage is fairly low, and the process name is masked so an administrator would be unlikely to look any further.
 
 \subsection{Test \# 9 - Process Monitoring - ps}
 
@@ -216,7 +216,7 @@ demonstrates the results of both methods.
   \label{fig:ps}
 \end{figure}
 
-While the process does show up in ps, we can see in the grepped version that there are typically several copies of udevd running on a given linux machine with different process ids, so it would be impossible for an administrator to tell if one was out of place.  
+The process does show up in ps, but there isn't any information available to identify it as malicious. We can see in the grepped version that there are typically several copies of udevd running on a given linux machine with different process ids, so it would be impossible for an administrator to tell if one was out of place.  
 
 \clearpage
 
