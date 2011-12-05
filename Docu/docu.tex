@@ -206,6 +206,8 @@ demonstrates the results of both methods.
 
 While the process does show up in htop, it would be very difficult to distinguish from any of the other running versions of udevd.  Resource usage is fairly low, and the process name is masked so an administrator would be unlikely to look any further.
 
+\clearpage
+
 \subsection{Test \# 9 - Process Monitoring - ps}
 
 \begin{figure}[htb]                                                                       
@@ -231,8 +233,6 @@ The process does show up in ps, but there isn't any information available to ide
 \end{figure}
 
 Snort was installed with an up to date ruleset and failed to alarm on any of the incoming or outgoing packets as a command was sent from the Client to the Server and then a response was sent from the Server back to the client.  As Snort is limited to the definitions in the installed ruleset, we see the shortcomings of signature based IDS systems all too clearly here.
-
-\clearpage
 
 \subsection{Test \# 11 - Interface Monitoring - netstat}
 
