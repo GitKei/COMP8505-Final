@@ -17,7 +17,11 @@
 
 \section{Introduction}
 
-Placeholder.
+The purpose of this experiment was to see how successful we could be in making a covert channel program that would be difficult to detect by system and network administrators. The extent to which this was possible was somewhat surprising to us using tools like linux's raw sockets and the libpcap library.  As our Testing Data shows, common system monitoring  tools, IDSes, and even packet monitoring are little help.  If you don't know what you're looking for, you're unlikely to find it.
+
+Our general strategy was to hide a very small amount of data in certain marked packets and craft the rest of the packet to look like a legitimate request so as not to arouse suspicion. For testing purposes, our data transfer is reasonably fast, however, in a real world setting a channel of this type would likely be limited to a few packets (and therefore bytes) per minute.
+
+We did have to reduce the scope of our program somewhat as noted in the Covert Channel Discussion section, but for the most part we found the work done in the early planning stages to be a very useful guide.  Given that we were able to follow the design quite closely, building the missing features is something we would like to keep in mind for the future.
 
 \section{Usage Instructions}
 
@@ -209,7 +213,7 @@ The majority of the testing will be carried out from the server (victim) side as
 
 \subsection{Implementation}
 
-The first thing we should cover is how well we were able to follow the course set out by our design document.  We were able to implement the Transmission level, Frame level and Packet level mechanisms quite easily.  We decided to increase the length of the Signature at the Packet level to 1B and drop the Offset field as our packets go out too slowly to encounter re-ordering.  The Frame level logic made enabling full 64bit DES encryption/decryption quite easy.  We do also include the password check at the Transmission level and MD5 hash for data verification, however, we did not have time to add a reliability layer so it is of limited value. We would not recommend use of this Proof of Concept tool on a highly congested network.
+The first thing we should cover is how well we were able to follow the course set out by our design document.  We were able to implement the Transmission level, Frame level and Packet level mechanisms quite easily.  We decided to increase the length of the Signature at the Packet level to 1B and drop the Offset field as our packets go out too slowly to encounter re-ordering.  The Frame level logic made enabling full 64bit DES encryption/decryption quite easy.  We do also include the password check and MD5 hash for data verification at the Transmission level, however, we did not have time to add a reliability layer so it is of limited value. We would not recommend use of this Proof of Concept tool on a highly congested network.
 
 Using libpcap on the Server(victim) was very useful as we didn't have to worry about firewall settings or giving ourselves away to common administrator tools such as netstat or ps (masked executable).  We chose to use a Raw Socket to read packets on the Client (attacker) as it made the program loop a little bit more straightforward and the additional features available through the libpcap library weren't necessary on the client's side.
 
@@ -225,6 +229,6 @@ There are a couple of things we can do to increase our chances of detecting this
 
 \section{Conclusion}
 
-Placeholder.
+
 
 \end{document}
