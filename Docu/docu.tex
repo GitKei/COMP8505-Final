@@ -59,6 +59,14 @@ The majority of the testing will be carried out from the server (victim) side as
 \hline
 7 & Changing watch\newline directory. & bkdoor & Execute new server with new watching directory & Yes\\
 \hline
+8 & Resource Monitoring & htop & Backdoor should be indistinguishable from legitimate processes & Yes\\
+\hline
+9 & Process Monitoring & ps & Backdoor should be indistinguishable from legitimate processes & Yes\\
+\hline
+10 & Network Monitoring & snort & Backdoor should not trigger any alerts & Yes\\
+\hline
+11 & Interface Monitoring & netstat & Backdoor should listening mechanisms should not be visible & Yes\\
+\hline
 \end{tabularx}
 
 \clearpage
@@ -149,6 +157,54 @@ The majority of the testing will be carried out from the server (victim) side as
 
 \clearpage
 
+\subsection{Test \# 8 - Resource Monitoring - htop}
+
+\begin{figure}[htb]                                                                       
+  \begin{center}
+    \includegraphics[width=0.9\textwidth]{Pictures/htop.png}
+  \end{center}
+  \caption{Htop Monitoring}
+  \label{fig:htop}
+\end{figure}
+
+\clearpage
+
+\subsection{Test \# 9 - Process Monitoring - ps}
+
+\begin{figure}[htb]                                                                       
+  \begin{center}
+    \includegraphics[width=0.9\textwidth]{Pictures/ps.png}
+  \end{center}
+  \caption{Ps Monitoring}
+  \label{fig:ps}
+\end{figure}
+
+\clearpage
+
+\subsection{Test \# 10 - Network Monitoring - snort}
+
+\begin{figure}[htb]                                                                       
+  \begin{center}
+    \includegraphics[width=0.9\textwidth]{Pictures/snort.png}
+  \end{center}
+  \caption{Snort Monitoring}
+  \label{fig:snort}
+\end{figure}
+
+\clearpage
+
+\subsection{Test \# 10 - Interface Monitoring - snort}
+
+\begin{figure}[htb]                                                                       
+  \begin{center}
+    \includegraphics[width=0.9\textwidth]{Pictures/netstat.png}
+  \end{center}
+  \caption{Netstat Monitoring}
+  \label{fig:netstat}
+\end{figure}
+
+\clearpage
+
 \section{Covert Channel Discussion}
 
 \subsection{Implementation}
@@ -163,7 +219,9 @@ Regarding covert channel types, we implemented our UDP header and NTP payload co
 
 As we saw from the testing section, detecting a cleverly hidden backdoor is nearly impossible.  The fact that the packets look like perfectly legitimate requests certainly does not make a network administrators job easier. If we decided to track all traffic types, we could look for an increase in a certain request type, but this isn't an ideal solution. Simply slowing down transmission should make it stand out less or the attacker could simply switch between signatures; this could also potentially cause a large number of false positives as legitimate usage patterns change.
 
-A cleverly hidden backdoor isn't impossible to detect on a compromised system, but monitoring a large number of systems with enough attention to detail could potentially be very time consuming.  The first thing an administrator should look for are setuid executables, there should be a very small number of these, if any on a given system.  We've already seen that the netstat, top and ps utilities are unlikely to give us any useful information.
+A cleverly hidden backdoor isn't impossible to detect on a compromised system, but monitoring a large number of systems with enough attention to detail could potentially be very time consuming.  The first thing an administrator should look for are setuid executables, there should be a very small number of these, if any on a given system.  We've already seen that the netstat, top and ps utilities are unable to give us any useful information. 
+
+There are a couple of things we can do to increase our chances of detecting this type of activity at the sys-admin level. We can use log-monitoring applications to hopefully detect the initial intrusion; if this is an inside job by a legitimate user, this may be difficult.  If we have a relatively static configuration, we can audit all binary executables using MD5 or SHA1 hashes. If users are required to install or download things regularly, this may be too time-consuming in practice.
 
 \section{Conclusion}
 
