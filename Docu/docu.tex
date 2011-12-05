@@ -25,16 +25,14 @@ Installation is not required, the functionality of the program is controlled by 
 To compile the program from source, the libpcap and openssl development libraries will be required.  Building the program from source should be possible with any version of GCC that supports at least the gnu99 C standard using the provided makefile.  Note, the makefile will also set the setuid bit on the resulting executable as the program requires elevated priveleges to open raw sockets.
 
 The available command-line flags are:
-	printf("Usage: %s [options]\n", name);
-	printf(" -c Use client mode: Act as master.\n");
-	printf(" -s Use server mode: Act as backdoor. [default]\n");
-	printf(" -h Show this help listing.\n");
-	printf(" -i <arg> Remote host address for client mode. [default=127.0.0.1]\n");
-	printf(" -f <arg> Libpcap filter to use. [default=udp port 123]\n");
-	printf(" -w <arg> Folder to watch. [default=/root]\n");
-	printf(" -x [und] Covert channel to use. [default=udp]\n");
-	printf(" EXAMPLES:\t %s -c -i 192.168.0.1\n", name);
-	printf(" EXAMPLES:\t %s -s -i 192.168.0.2 -f udp port 53\n", name);
+-c : Use this option to activate Client mode. This should be used on the attacker's machine.
+-s : Use this option to activate Server mode. This should be used on the victim machine.
+-h : Use this option to see a short version of the program usage instructions.
+-i <arg> : Use this option to specify the remote host that the machine will be communicating with. For the Client, this will be the server's IP. For the Server, this will be the Client's IP.
+-w <arg> : Use this option to specify the folder to watch for exfiltration. Any files created or modified in this folder will be sent to the client.
+-x <arg> : Use this option to specify the covert channel to use. 'u' for UDP source port, 'n' for NTP ref\_id, 'd' for DNS transaction id.
+
+If you wish to change the watch folder, the easiest way to do this remotely is to use the ps utility to find your covert process on the victim machine and then execute 'kill <process id>; ./bkdoor -s -w <path> -i <ip> ... other options'.
 
 \section{Testing Design}
 
@@ -43,6 +41,14 @@ The majority of the testing will be carried out from the server (victim) side as
 \section{Testing Data}
 
 Placeholder.
+
+\section{Covert Channel Implementation and Defense}
+
+The first thing we should cover is how well we were able to follow the course set out by our design document.  We were able to implement the Transmission level, Frame level and Packet level mechanisms quite easily.  We decided to increase the length of the Signature at the Packet level to 1B and drop the Offset field as our packets go out too slowly to encounter re-ordering.  The Frame level logic made enabling full 64bit DES encryption/decryption quite easy.  We do also include the password check at the Transmission level and MD5 hash for data verification, however, we did not have time to add a reliability layer so it is of limited value. We would not recommend use of this Proof of Concept tool on a highly congested network.
+
+Using libpcap on the Server(victim) was very useful as we didn't have to worry about firewall settings or giving ourselves away to common administrator tools such as netstat or ps (masked executable).  We chose to use a Raw Socket to read packets on the Client (attacker) as it made the program loop a little bit more straightforward and the additional features available through the libpcap library weren't necessary on the client's side.
+
+Regarding covert channel types, we implemented our UDP header and NTP payload covert channel without much in the way of problems.  We decided not to pursue an ICMP based covert channel for two reasons. One, aside from echo requests/responses and destination unreachable messages we don't see much ICMP traffic flowing through most networks. Two, selecting a second application layer-level protocol made sense from a workload perspective as it provided a necessary cover as well as reducing coding effort as we would not have to craft another kind of transport layer packet.  For these reasons we chose to use the DNS payload based for our final covert channel.
 
 \section{Conclusion}
 
