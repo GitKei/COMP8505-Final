@@ -49,15 +49,14 @@ The available command-line flags are:\\
 \end{tabularx}
 \\
 \\
-If you wish to change the watch folder, the easiest way to do this remotely is to use the ps utility to find your covert process on the victim machine and then execute 'kill <process id>; ./bkdoor -s -w <path> -i <ip> ... other options'.
+If you wish to change the watch folder, the easiest way to do this remotely is to use the ps utility to find your covert process on the victim machine and then execute 'kill \textless process id\textgreater ; ./bkdoor -s -w \textless path\textgreater  -i \textless ip\textgreater ... other options'.
 
 \clearpage
 
 \section{Testing Design}
 
-The majority of the testing will be carried out from the server (victim) side as this is where monitoring.
-The signature for our rootkit is currently `0xAB' with the data encrypted in the next byte.  The signature
-can also be configured at compile time, which will be harder for analysts and IDS to detect.
+The majority of the testing will be carried out from the server (victim) side as this is where the majority of the monitoring would be done.
+The signature for our rootkit is currently ``0xAB" with the data encrypted in the next byte.  The signature can be changed by modifying a header at compile time, to make it harder for analysts and IDSes to detect.
 \\
 
 \begin{tabularx}{\textwidth}{|c|X|X|X|c|}
@@ -218,6 +217,8 @@ demonstrates the results of both methods.
   \label{fig:htop}
 \end{figure}
 
+While the process does show up in htop, it would be very difficult to distinguish from any of the other running versions of udevd.  Resource usage is fairly low, and the process name is masked so an administrator would be unlikely to look any further.
+
 \clearpage
 
 \subsection{Test \# 9 - Process Monitoring - ps}
@@ -229,6 +230,8 @@ demonstrates the results of both methods.
   \caption{Ps Monitoring}
   \label{fig:ps}
 \end{figure}
+
+The process does show up in ps, but there isn't any information available to identify it as malicious. We can see in the grepped version that there are typically several copies of udevd running on a given linux machine with different process ids, so it would be impossible for an administrator to tell if one was out of place.  
 
 \clearpage
 
@@ -242,7 +245,7 @@ demonstrates the results of both methods.
   \label{fig:snort}
 \end{figure}
 
-\clearpage
+Snort was installed with an up to date ruleset and failed to alarm on any of the incoming or outgoing packets as a command was sent from the Client to the Server and then a response was sent from the Server back to the client.  As Snort is limited to the definitions in the installed ruleset, we see the shortcomings of signature based IDS systems all too clearly here.
 
 \subsection{Test \# 11 - Interface Monitoring - netstat}
 
@@ -253,6 +256,8 @@ demonstrates the results of both methods.
   \caption{Netstat Monitoring}
   \label{fig:netstat}
 \end{figure}
+
+Here we can see netstat listing the open connections and listening sockets and again, the backdoor is nowhere in sight. This is as expected, as libpcap uses PF\_PACKET sockets internally, which are even lower level than the raw sockets we use elsewhere in the program.
 
 \clearpage
 
